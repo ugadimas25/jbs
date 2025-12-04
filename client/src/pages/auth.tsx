@@ -38,7 +38,7 @@ export default function AuthPage() {
            <div className="inline-flex items-center justify-center bg-[#ec7014] p-3 rounded-full text-white mb-4 shadow-lg">
               <Sparkles size={32} />
            </div>
-           <h1 className="font-serif text-3xl font-bold text-[#662506]">Givency Academy</h1>
+           <h1 className="font-serif text-3xl font-bold text-[#662506]">Jakarta Beauty School</h1>
            <p className="text-[#993404]">Join our community of beauty professionals</p>
         </div>
 

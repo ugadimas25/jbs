@@ -16,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="bg-[#ec7014] p-1.5 rounded-full text-white group-hover:rotate-12 transition-transform">
                 <Sparkles size={20} />
               </div>
-              <span className="font-serif text-xl font-bold tracking-wide text-[#993404]">GIVENCY</span>
+              <span className="font-serif text-xl font-bold tracking-wide text-[#993404]">JAKARTA BEAUTY SCHOOL</span>
             </a>
           </Link>
 
@@ -56,7 +56,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <footer className="bg-[#662506] text-[#fff7bc] py-12 mt-20">
         <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
           <div>
-            <h3 className="font-serif text-2xl font-bold mb-4 text-[#fec44f]">GIVENCY</h3>
+            <h3 className="font-serif text-2xl font-bold mb-4 text-[#fec44f]">JAKARTA BEAUTY SCHOOL</h3>
             <p className="text-[#fee391]/80 max-w-xs">
               Empowering beauty professionals with world-class training in makeup, nails, and lashes.
             </p>
@@ -65,7 +65,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h4 className="font-bold text-white mb-4">Contact</h4>
             <p className="text-[#fee391]/80">Jakarta, Indonesia</p>
             <p className="text-[#fee391]/80">+62 812 3456 7890</p>
-            <p className="text-[#fee391]/80">info@givencyacademy.com</p>
+            <p className="text-[#fee391]/80">info@jakartabeautyschool.com</p>
           </div>
           <div>
             <h4 className="font-bold text-white mb-4">Follow Us</h4>
@@ -77,7 +77,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div className="container mx-auto px-4 mt-12 pt-8 border-t border-[#fff7bc]/20 text-center text-[#fee391]/60 text-sm">
-          © 2024 Givency Makeup Academy. All rights reserved.
+          © 2024 Jakarta Beauty School. All rights reserved.
         </div>
       </footer>
     </div>

@@ -123,7 +123,7 @@ export default function Home() {
              />
           </div>
           <div>
-            <h2 className="font-serif text-4xl font-bold text-[#662506] mb-6">Why Choose Givency?</h2>
+            <h2 className="font-serif text-4xl font-bold text-[#662506] mb-6">Why Choose Jakarta Beauty School?</h2>
             <div className="space-y-6">
               {[
                 "Industry-recognized certification upon completion",
