@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { SLOTS } from "@/lib/constants";
-import { Calendar, Clock, MapPin, ChevronRight, Download, Award, CalendarDays } from "lucide-react";
+import { Calendar, Clock, MapPin, ChevronRight, Download, Award, CalendarDays, ListChecks } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Mock Data for History
@@ -27,7 +27,12 @@ const MOCK_HISTORY = [
     status: "upcoming",
     price: "IDR 2.500.000",
     instructor: "Ms. Sarah Wijaya",
-    notes: "Please bring your own brush set if you have one."
+    notes: "Please bring your own brush set if you have one.",
+    sessions: [
+      { date: "2025-12-10", time: "12:30 - 15:00", status: "Upcoming" },
+      { date: "2025-12-11", time: "12:30 - 15:00", status: "Scheduled" },
+      { date: "2025-12-12", time: "12:30 - 15:00", status: "Scheduled" }
+    ]
   },
   {
     id: "BK-2025-002",
@@ -40,7 +45,11 @@ const MOCK_HISTORY = [
     status: "upcoming",
     price: "IDR 1.500.000",
     instructor: "Ms. Linda Chen",
-    notes: "All materials provided."
+    notes: "All materials provided.",
+    sessions: [
+      { date: "2025-12-15", time: "13:30 - 16:00", status: "Upcoming" },
+      { date: "2025-12-16", time: "13:30 - 16:00", status: "Scheduled" }
+    ]
   },
   {
     id: "BK-2024-089",
@@ -53,7 +62,11 @@ const MOCK_HISTORY = [
     status: "completed",
     price: "IDR 1.500.000",
     instructor: "Ms. Jessica Tan",
-    notes: "Completed with distinction."
+    notes: "Completed with distinction.",
+    sessions: [
+      { date: "2024-11-20", time: "12:30 - 15:00", status: "Completed" },
+      { date: "2024-11-21", time: "12:30 - 15:00", status: "Completed" }
+    ]
   },
   {
     id: "BK-2024-075",
@@ -66,7 +79,12 @@ const MOCK_HISTORY = [
     status: "completed",
     price: "IDR 1.500.000",
     instructor: "Ms. Sarah Wijaya",
-    notes: "Basic certification awarded."
+    notes: "Basic certification awarded.",
+    sessions: [
+      { date: "2024-10-05", time: "12:30 - 15:00", status: "Completed" },
+      { date: "2024-10-06", time: "12:30 - 15:00", status: "Completed" },
+      { date: "2024-10-07", time: "12:30 - 15:00", status: "Completed" }
+    ]
   }
 ];
 
@@ -98,6 +116,15 @@ export default function History() {
     setSelectedBooking(booking);
     setNewDate(booking.date); // Pre-fill current date
     setIsRescheduleOpen(true);
+  };
+
+  const handleDownloadCertificate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast({
+      title: "Certificate Downloaded",
+      description: "Your certificate has been saved successfully.",
+      className: "bg-[#ec7014] text-white border-none",
+    });
   };
 
   const confirmReschedule = () => {
@@ -206,7 +233,11 @@ export default function History() {
                       {/* Actions Section */}
                       <div className="flex md:flex-col gap-3 w-full md:w-auto">
                         {item.status === 'completed' ? (
-                          <Button variant="outline" className="w-full md:w-40 border-[#fec44f] text-[#662506] hover:bg-[#fec44f] hover:text-[#662506] gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={handleDownloadCertificate}
+                            className="w-full md:w-40 border-[#fec44f] text-[#662506] hover:bg-[#fec44f] hover:text-[#662506] gap-2"
+                          >
                             <Download className="w-4 h-4" /> Certificate
                           </Button>
                         ) : (
@@ -249,72 +280,101 @@ export default function History() {
 
       {/* Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="max-w-md bg-[#ffffe5] border-[#fee391]">
+        <DialogContent className="max-w-2xl bg-[#ffffe5] border-[#fee391] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl text-[#662506] flex items-center gap-2">
               <span className="bg-[#ec7014] w-2 h-6 rounded-full"></span>
               Class Details
             </DialogTitle>
             <DialogDescription className="text-[#993404]">
-              Full information about your booking.
+              Full information regarding your course and schedule.
             </DialogDescription>
           </DialogHeader>
           
           {selectedBooking && (
-            <div className="space-y-6 py-4">
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Class Name</Label>
-                  <p className="text-lg font-bold text-[#662506]">{selectedBooking.title}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-8 py-4">
+              {/* Primary Info */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Class Name</Label>
+                    <p className="text-lg font-bold text-[#662506]">{selectedBooking.title}</p>
+                  </div>
                   <div>
                     <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Level</Label>
                     <p className="font-medium text-[#662506]">{selectedBooking.level}</p>
                   </div>
+                  <div>
+                     <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Location</Label>
+                     <p className="font-medium text-[#662506] flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-[#ec7014]" />
+                        {selectedBooking.location}
+                     </p>
+                  </div>
+                </div>
+                <div className="space-y-4">
                    <div>
-                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Price</Label>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Instructor</Label>
+                    <p className="font-medium text-[#662506]">{selectedBooking.instructor}</p>
+                  </div>
+                   <div>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Total Price</Label>
                     <p className="font-medium text-[#662506]">{selectedBooking.price}</p>
                   </div>
-                </div>
-                <Separator className="bg-[#fee391]" />
-                <div className="grid grid-cols-2 gap-4">
                    <div>
-                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Date</Label>
-                    <p className="font-medium text-[#662506] flex items-center gap-2">
-                      <CalendarDays className="w-4 h-4 text-[#ec7014]" />
-                      {selectedBooking.date}
-                    </p>
-                  </div>
-                   <div>
-                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Time</Label>
-                    <p className="font-medium text-[#662506] flex items-center gap-2">
-                       <Clock className="w-4 h-4 text-[#ec7014]" />
-                       {selectedBooking.time}
-                    </p>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Notes</Label>
+                    <p className="text-sm text-[#662506] italic">{selectedBooking.notes}</p>
                   </div>
                 </div>
-                <div>
-                  <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Instructor</Label>
-                  <p className="font-medium text-[#662506]">{selectedBooking.instructor}</p>
+              </div>
+
+              <Separator className="bg-[#fee391]" />
+
+              {/* Session List */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                   <ListChecks className="w-5 h-5 text-[#ec7014]" />
+                   <h3 className="font-serif text-xl font-bold text-[#662506]">Course Sessions</h3>
                 </div>
-                <div>
-                   <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Location</Label>
-                   <p className="font-medium text-[#662506] flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-[#ec7014]" />
-                      {selectedBooking.location}
-                   </p>
-                </div>
-                 <div className="bg-[#fec44f]/10 p-3 rounded-lg border border-[#fec44f]/20">
-                   <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Notes</Label>
-                   <p className="text-sm text-[#662506] mt-1">{selectedBooking.notes}</p>
+                
+                <div className="grid gap-3">
+                  {selectedBooking.sessions?.map((session, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-white/50 p-4 rounded-xl border border-[#fee391] hover:bg-white transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-[#ec7014]/10 text-[#ec7014] w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="font-bold text-[#662506] flex items-center gap-2">
+                            <CalendarDays className="w-4 h-4 text-[#993404]/60" />
+                            {new Date(session.date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                          </p>
+                          <p className="text-sm text-[#993404] flex items-center gap-2 mt-1">
+                            <Clock className="w-3 h-3" />
+                            {session.time}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={`
+                          ${session.status === 'Completed' 
+                            ? 'border-[#662506] text-[#662506] bg-[#ffffe5]' 
+                            : 'border-[#ec7014] text-[#ec7014] bg-[#ec7014]/5'}
+                          ml-2
+                        `}
+                      >
+                        {session.status}
+                      </Badge>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           )}
           
           <DialogFooter>
-            <Button onClick={() => setIsDetailsOpen(false)} className="bg-[#662506] hover:bg-[#993404] text-white">Close</Button>
+            <Button onClick={() => setIsDetailsOpen(false)} className="bg-[#662506] hover:bg-[#993404] text-white w-full sm:w-auto">Close Details</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
