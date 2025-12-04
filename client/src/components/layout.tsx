@@ -30,6 +30,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {user ? (
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium hidden sm:inline-block">Hello, {user.name}</span>
+                <Link href="/history">
+                  <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
+                    My Classes
+                  </Button>
+                </Link>
                 <Button 
                   variant="outline" 
                   onClick={logout}

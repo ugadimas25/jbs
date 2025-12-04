@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import Layout from "@/components/layout";
 import Home from "@/pages/home";
 import Booking from "@/pages/booking";
+import History from "@/pages/history";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
@@ -21,6 +22,11 @@ function Router() {
       <Route path="/booking">
         <Layout>
           <Booking />
+        </Layout>
+      </Route>
+      <Route path="/history">
+        <Layout>
+          <History />
         </Layout>
       </Route>
       <Route component={NotFound} />
