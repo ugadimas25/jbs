@@ -1,10 +1,17 @@
 import { useAuth } from "@/lib/auth-context";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, ChevronRight, Download, Award } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { SLOTS } from "@/lib/constants";
+import { Calendar, Clock, MapPin, ChevronRight, Download, Award, CalendarDays } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Mock Data for History
@@ -18,7 +25,9 @@ const MOCK_HISTORY = [
     time: "12:30 - 15:00",
     location: "Jakarta Beauty School - Menteng",
     status: "upcoming",
-    price: "IDR 2.500.000"
+    price: "IDR 2.500.000",
+    instructor: "Ms. Sarah Wijaya",
+    notes: "Please bring your own brush set if you have one."
   },
   {
     id: "BK-2025-002",
@@ -29,7 +38,9 @@ const MOCK_HISTORY = [
     time: "13:30 - 16:00",
     location: "Jakarta Beauty School - Menteng",
     status: "upcoming",
-    price: "IDR 1.500.000"
+    price: "IDR 1.500.000",
+    instructor: "Ms. Linda Chen",
+    notes: "All materials provided."
   },
   {
     id: "BK-2024-089",
@@ -40,7 +51,9 @@ const MOCK_HISTORY = [
     time: "12:30 - 15:00",
     location: "Jakarta Beauty School - Menteng",
     status: "completed",
-    price: "IDR 1.500.000"
+    price: "IDR 1.500.000",
+    instructor: "Ms. Jessica Tan",
+    notes: "Completed with distinction."
   },
   {
     id: "BK-2024-075",
@@ -51,19 +64,59 @@ const MOCK_HISTORY = [
     time: "12:30 - 15:00",
     location: "Jakarta Beauty School - Menteng",
     status: "completed",
-    price: "IDR 1.500.000"
+    price: "IDR 1.500.000",
+    instructor: "Ms. Sarah Wijaya",
+    notes: "Basic certification awarded."
   }
 ];
 
 export default function History() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const [selectedBooking, setSelectedBooking] = useState<typeof MOCK_HISTORY[0] | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  
+  // Reschedule form state
+  const [newDate, setNewDate] = useState("");
+  const [newSlot, setNewSlot] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated) {
       setLocation("/auth");
     }
   }, [isAuthenticated, setLocation]);
+
+  const handleDetails = (booking: typeof MOCK_HISTORY[0]) => {
+    setSelectedBooking(booking);
+    setIsDetailsOpen(true);
+  };
+
+  const handleReschedule = (booking: typeof MOCK_HISTORY[0]) => {
+    setSelectedBooking(booking);
+    setNewDate(booking.date); // Pre-fill current date
+    setIsRescheduleOpen(true);
+  };
+
+  const confirmReschedule = () => {
+    if (!newDate || !newSlot) {
+      toast({
+        title: "Incomplete Selection",
+        description: "Please select both a new date and time slot.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Reschedule Request Sent",
+      description: `Your request to move ${selectedBooking?.title} to ${newDate} has been submitted for approval.`,
+      className: "bg-[#ec7014] text-white border-none",
+    });
+    setIsRescheduleOpen(false);
+  };
 
   if (!isAuthenticated) return null;
 
@@ -157,11 +210,18 @@ export default function History() {
                             <Download className="w-4 h-4" /> Certificate
                           </Button>
                         ) : (
-                          <Button variant="outline" className="w-full md:w-40 border-[#ec7014] text-[#ec7014] hover:bg-[#ec7014] hover:text-white gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => handleReschedule(item)}
+                            className="w-full md:w-40 border-[#ec7014] text-[#ec7014] hover:bg-[#ec7014] hover:text-white gap-2"
+                          >
                             Reschedule
                           </Button>
                         )}
-                        <Button className="w-full md:w-40 bg-[#662506] text-white hover:bg-[#993404] gap-2">
+                        <Button 
+                          onClick={() => handleDetails(item)}
+                          className="w-full md:w-40 bg-[#662506] text-white hover:bg-[#993404] gap-2"
+                        >
                           Details <ChevronRight className="w-4 h-4" />
                         </Button>
                       </div>
@@ -186,6 +246,130 @@ export default function History() {
           </Button>
         </div>
       </div>
+
+      {/* Details Dialog */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="max-w-md bg-[#ffffe5] border-[#fee391]">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl text-[#662506] flex items-center gap-2">
+              <span className="bg-[#ec7014] w-2 h-6 rounded-full"></span>
+              Class Details
+            </DialogTitle>
+            <DialogDescription className="text-[#993404]">
+              Full information about your booking.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedBooking && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Class Name</Label>
+                  <p className="text-lg font-bold text-[#662506]">{selectedBooking.title}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Level</Label>
+                    <p className="font-medium text-[#662506]">{selectedBooking.level}</p>
+                  </div>
+                   <div>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Price</Label>
+                    <p className="font-medium text-[#662506]">{selectedBooking.price}</p>
+                  </div>
+                </div>
+                <Separator className="bg-[#fee391]" />
+                <div className="grid grid-cols-2 gap-4">
+                   <div>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Date</Label>
+                    <p className="font-medium text-[#662506] flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4 text-[#ec7014]" />
+                      {selectedBooking.date}
+                    </p>
+                  </div>
+                   <div>
+                    <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Time</Label>
+                    <p className="font-medium text-[#662506] flex items-center gap-2">
+                       <Clock className="w-4 h-4 text-[#ec7014]" />
+                       {selectedBooking.time}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Instructor</Label>
+                  <p className="font-medium text-[#662506]">{selectedBooking.instructor}</p>
+                </div>
+                <div>
+                   <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Location</Label>
+                   <p className="font-medium text-[#662506] flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-[#ec7014]" />
+                      {selectedBooking.location}
+                   </p>
+                </div>
+                 <div className="bg-[#fec44f]/10 p-3 rounded-lg border border-[#fec44f]/20">
+                   <Label className="text-xs uppercase text-[#993404] font-bold tracking-wider">Notes</Label>
+                   <p className="text-sm text-[#662506] mt-1">{selectedBooking.notes}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button onClick={() => setIsDetailsOpen(false)} className="bg-[#662506] hover:bg-[#993404] text-white">Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen}>
+        <DialogContent className="max-w-lg bg-[#ffffe5] border-[#fee391]">
+          <DialogHeader>
+             <DialogTitle className="font-serif text-2xl text-[#662506] flex items-center gap-2">
+              <Clock className="w-6 h-6 text-[#ec7014]" />
+              Reschedule Class
+            </DialogTitle>
+            <DialogDescription className="text-[#993404]">
+              Select a new date and time for your class. Subject to approval.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="space-y-4">
+              <Label htmlFor="new-date" className="text-[#662506] font-medium">Select New Date</Label>
+              <Input 
+                type="date" 
+                id="new-date" 
+                value={newDate} 
+                onChange={(e) => setNewDate(e.target.value)}
+                className="h-12 border-[#fec44f] focus:ring-[#ec7014] bg-white/50"
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <Label className="text-[#662506] font-medium">Select New Time Slot</Label>
+              <RadioGroup value={newSlot} onValueChange={setNewSlot} className="grid grid-cols-2 gap-4">
+                {SLOTS.map((s) => (
+                  <div key={s.id}>
+                    <RadioGroupItem value={s.id} id={`reschedule-${s.id}`} className="peer sr-only" />
+                    <Label
+                      htmlFor={`reschedule-${s.id}`}
+                      className="flex flex-col items-center justify-center p-4 text-center rounded-xl border-2 border-[#fee391] bg-white/50 hover:bg-[#fff7bc] peer-data-[state=checked]:border-[#ec7014] peer-data-[state=checked]:bg-[#fff7bc] cursor-pointer transition-all h-full"
+                    >
+                      <Clock className="w-5 h-5 text-[#ec7014] mb-1" />
+                      <span className="font-bold text-[#662506] text-sm">{s.label}</span>
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRescheduleOpen(false)} className="border-[#cc4c02] text-[#cc4c02]">Cancel</Button>
+            <Button onClick={confirmReschedule} className="bg-[#ec7014] hover:bg-[#cc4c02] text-white">Confirm Request</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
