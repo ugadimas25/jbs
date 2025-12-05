@@ -6,22 +6,22 @@ import eyelashImg from "@assets/generated_images/close_up_of_eyelash_extension_p
 export const CLASS_TYPES = [
   {
     id: "makeup",
-    title: "Professional Makeup",
-    description: "Master the art of beauty and creative makeup.",
+    title: "Make up and Hair do",
+    description: "Master the art of beauty makeup and professional hair styling.",
     icon: Palette,
     image: makeupImg
   },
   {
     id: "nail",
-    title: "Nail Artistry",
+    title: "Nails",
     description: "Create stunning nail designs and care techniques.",
     icon: Sparkles,
     image: nailImg
   },
   {
     id: "eyelash",
-    title: "Eyelash Extensions",
-    description: "Learn precision lash application and styling.",
+    title: "Brow, lips and lash",
+    description: "Learn precision eyebrow shaping, lip techniques, and lash application.",
     icon: Eye,
     image: eyelashImg
   }

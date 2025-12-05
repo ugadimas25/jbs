@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AuthPage() {
@@ -35,8 +34,12 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#ffffe5] p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-           <div className="inline-flex items-center justify-center bg-[#ec7014] p-3 rounded-full text-white mb-4 shadow-lg">
-              <Sparkles size={32} />
+           <div className="inline-flex items-center justify-center mb-4">
+              <img 
+                src="/logo.png" 
+                alt="Jakarta Beauty School Logo" 
+                className="h-20 w-auto"
+              />
            </div>
            <h1 className="font-serif text-3xl font-bold text-[#662506]">Jakarta Beauty School</h1>
            <p className="text-[#993404]">Join our community of beauty professionals</p>

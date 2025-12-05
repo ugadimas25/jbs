@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, Star, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CLASS_TYPES } from "@/lib/constants";
-import heroImage from "@assets/generated_images/elegant_makeup_academy_hero_image_with_warm_lighting.png";
 
 export default function Home() {
   return (
@@ -11,11 +10,15 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src={heroImage} 
-            alt="Academy Interior" 
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
             className="w-full h-full object-cover"
-          />
+          >
+            <source src="/luxury_beauty_salon_interior_atmosphere.mp4" type="video/mp4" />
+          </video>
           <div className="absolute inset-0 bg-gradient-to-r from-[#662506]/90 via-[#662506]/50 to-transparent" />
         </div>
         

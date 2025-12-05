@@ -1,7 +1,7 @@
 const CACHE_NAME = 'jbs-cache-v1';
 const urlsToCache = [
   '/',
-  '/index.html',
+  '/logo.png',
   '/favicon.png'
 ];
 

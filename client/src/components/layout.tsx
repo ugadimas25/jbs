@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sparkles, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useState } from "react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -15,10 +15,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-50 w-full bg-[#ffffe5]/80 backdrop-blur-md border-b border-[#cc4c02]/20">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/">
-            <a className="flex items-center gap-2 group">
-              <div className="bg-[#ec7014] p-1.5 rounded-full text-white group-hover:rotate-12 transition-transform">
-                <Sparkles size={20} />
-              </div>
+            <a className="flex items-center gap-3 group">
+              <img 
+                src="/logo.png" 
+                alt="Jakarta Beauty School Logo" 
+                className="h-16 w-auto group-hover:scale-105 transition-transform"
+              />
               <span className="font-serif text-xl font-bold tracking-wide text-[#993404]">JAKARTA BEAUTY SCHOOL</span>
             </a>
           </Link>
