@@ -8,12 +8,14 @@ import Home from "@/pages/home";
 import Booking from "@/pages/booking";
 import History from "@/pages/history";
 import AuthPage from "@/pages/auth";
+import VerifyEmailPage from "@/pages/verify-email";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/auth" component={AuthPage} />
+      <Route path="/verify-email" component={VerifyEmailPage} />
       <Route path="/">
         <Layout>
           <Home />

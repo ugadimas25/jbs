@@ -1,33 +1,88 @@
 import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
-  const { login } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  const signupMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string; name: string }) => {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Signup failed");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      });
+      setName("");
+      setEmail("");
+      setPassword("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Signup failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const loginMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string }) => {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Login failed");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Login successful!",
+        description: `Welcome back, ${data.user.name}!`,
+      });
+      setLocation("/booking");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      login(email, "Member");
-      setLocation("/booking");
-    }
+    loginMutation.mutate({ email, password });
   };
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && name) {
-      login(email, name);
-      setLocation("/booking");
-    }
+    signupMutation.mutate({ email, password, name });
   };
 
   return (
@@ -86,14 +141,23 @@ export default function AuthPage() {
                     <Label htmlFor="password-signup">Password</Label>
                     <Input 
                       id="password-signup" 
-                      type="password" 
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      minLength={6}
                       required
                       className="border-[#fec44f] focus-visible:ring-[#ec7014]"
                     />
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white">Sign Up</Button>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white"
+                    disabled={signupMutation.isPending}
+                  >
+                    {signupMutation.isPending ? "Creating account..." : "Sign Up"}
+                  </Button>
                 </CardFooter>
               </form>
             </TabsContent>
@@ -130,7 +194,13 @@ export default function AuthPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white">Login</Button>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white"
+                    disabled={loginMutation.isPending}
+                  >
+                    {loginMutation.isPending ? "Logging in..." : "Login"}
+                  </Button>
                 </CardFooter>
               </form>
             </TabsContent>

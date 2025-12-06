@@ -44,11 +44,16 @@ export default function Home() {
                   Book a Class Now <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Link href="#classes">
-                <Button variant="outline" className="h-14 px-8 border-[#fff7bc] text-[#fff7bc] hover:bg-[#fff7bc] hover:text-[#662506] text-lg rounded-full bg-transparent backdrop-blur-sm transition-all">
-                  Explore Courses
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => {
+                  const element = document.getElementById('classes');
+                  element?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                variant="outline" 
+                className="h-14 px-8 border-[#fff7bc] text-[#fff7bc] hover:bg-[#fff7bc] hover:text-[#662506] text-lg rounded-full bg-transparent backdrop-blur-sm transition-all"
+              >
+                Explore Courses
+              </Button>
             </div>
           </motion.div>
         </div>
