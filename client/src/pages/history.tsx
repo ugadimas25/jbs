@@ -93,6 +93,8 @@ export default function History() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  // TEMPORARY: Authentication check disabled untuk testing
+
   const [selectedBooking, setSelectedBooking] = useState<typeof MOCK_HISTORY[0] | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
@@ -101,11 +103,12 @@ export default function History() {
   const [newDate, setNewDate] = useState("");
   const [newSlot, setNewSlot] = useState("");
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setLocation("/auth");
-    }
-  }, [isAuthenticated, setLocation]);
+  // TEMPORARY: Disabled untuk testing
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     setLocation("/auth");
+  //   }
+  // }, [isAuthenticated, setLocation]);
 
   const handleDetails = (booking: typeof MOCK_HISTORY[0]) => {
     setSelectedBooking(booking);
@@ -145,7 +148,8 @@ export default function History() {
     setIsRescheduleOpen(false);
   };
 
-  if (!isAuthenticated) return null;
+  // TEMPORARY: Disabled untuk testing
+  // if (!isAuthenticated) return null;
 
   return (
     <div className="container mx-auto px-4 py-12">

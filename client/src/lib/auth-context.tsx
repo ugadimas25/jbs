@@ -16,7 +16,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  // TEMPORARY: Mock user untuk testing - disable authentication
+  const [user, setUser] = useState<User | null>({
+    email: "test@example.com",
+    name: "Test User"
+  });
   const [, setLocation] = useLocation();
 
   const login = (email: string, name: string) => {
@@ -25,12 +29,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    setUser(null);
+    // setUser(null); // Disabled untuk testing
     setLocation("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: true }}>
       {children}
     </AuthContext.Provider>
   );

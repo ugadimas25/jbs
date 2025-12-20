@@ -28,19 +28,19 @@ export default function Booking() {
   const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [date, setDate] = useState<string>("");
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in or create an account to book a class.",
-        variant: "destructive",
-      });
-      setLocation("/auth");
-    }
-  }, [isAuthenticated, setLocation, toast]);
+  // TEMPORARY: Disabled authentication check untuk testing
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     toast({
+  //       title: "Authentication Required",
+  //       description: "Please sign in or create an account to book a class.",
+  //       variant: "destructive",
+  //     });
+  //     setLocation("/auth");
+  //   }
+  // }, [isAuthenticated, setLocation, toast]);
 
-  if (!isAuthenticated) return null;
+  // if (!isAuthenticated) return null;
 
   const handleNext = () => {
     if (step === 1 && !selectedClass) return;
