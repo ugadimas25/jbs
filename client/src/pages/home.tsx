@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import { ArrowRight, Star, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CLASS_TYPES } from "@/lib/constants";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="flex flex-col gap-20">
       {/* Hero Section */}
@@ -30,7 +33,7 @@ export default function Home() {
             className="max-w-2xl"
           >
             <div className="inline-block bg-[#fec44f] text-[#662506] px-4 py-1.5 rounded-full font-bold text-sm mb-6 tracking-wide uppercase">
-              Enrollment Open for 2025
+              Enrollment Open for 2026
             </div>
             <h1 className="font-serif text-5xl md:text-7xl font-bold text-[#ffffe5] mb-6 leading-tight">
               Master the Art of <span className="text-[#fec44f] italic">Beauty</span>
@@ -39,9 +42,9 @@ export default function Home() {
               Join Indonesia's premier academy for makeup, nail art, and eyelash extensions. Professional certification for your career.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/booking">
+              <Link href={isAuthenticated ? "/booking" : "/auth"}>
                 <Button className="h-14 px-8 bg-[#ec7014] hover:bg-[#cc4c02] text-white text-lg rounded-full shadow-[0_0_20px_rgba(236,112,20,0.4)] transition-all transform hover:scale-105">
-                  Book a Class Now <ArrowRight className="ml-2 w-5 h-5" />
+                  {isAuthenticated ? "Book a Class Now" : "Sign Up to Book"} <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               <Button 
@@ -89,9 +92,9 @@ export default function Home() {
                 </div>
                 <h3 className="font-serif text-2xl font-bold text-[#662506] mb-3">{item.title}</h3>
                 <p className="text-[#993404] mb-6">{item.description}</p>
-                <Link href={`/booking?class=${item.id}`}>
-                  <Button className="w-full bg-[#fee391] hover:bg-[#fec44f] text-[#662506] font-bold border border-[#fec44f]">
-                    View Details & Book
+                <Link href={`/courses/${item.id}`}>
+                  <Button className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white font-bold">
+                    View Details
                   </Button>
                 </Link>
               </div>

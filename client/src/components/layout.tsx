@@ -2,12 +2,93 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Bell } from "lucide-react";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+// Notification Bell Component
+function NotificationBell() {
+  const queryClient = useQueryClient();
+  
+  const { data: notificationsData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await fetch('/api/notifications', { credentials: 'include' });
+      if (!res.ok) return { notifications: [] };
+      return res.json();
+    },
+    refetchInterval: 30000, // Polling every 30 seconds
+  });
+
+  const notifications = notificationsData?.notifications || [];
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await fetch(`/api/notifications/${id}/read`, { 
+        method: 'PUT',
+        credentials: 'include' 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative text-[#993404] hover:text-[#ec7014]">
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0 bg-white border-[#fec44f]" align="end">
+        <div className="p-3 border-b border-[#fee391] bg-[#fff7bc]">
+          <h4 className="font-semibold text-[#662506]">Notifications</h4>
+        </div>
+        <div className="max-h-80 overflow-y-auto">
+          {notifications.length === 0 ? (
+            <p className="p-4 text-sm text-gray-500 text-center">No notifications</p>
+          ) : (
+            <ul className="divide-y divide-[#fee391]">
+              {notifications.map((note: any) => (
+                <li key={note.id} className={`p-3 hover:bg-[#fff7bc] transition-colors ${!note.isRead ? 'bg-[#fffef0]' : ''}`}>
+                  <Link 
+                    href={note.link || '#'} 
+                    onClick={() => markAsReadMutation.mutate(note.id)}
+                  >
+                    <a className="block">
+                      <p className={`text-sm text-[#662506] ${!note.isRead ? 'font-semibold' : ''}`}>
+                        {note.message}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(note.createdAt).toLocaleDateString('id-ID')}
+                      </p>
+                    </a>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isTeacher, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -33,14 +114,29 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            {user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium hidden sm:inline-block">Hello, {user.name}</span>
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <NotificationBell />
+                <span className="text-sm font-medium hidden lg:inline-block text-[#662506]">Hello, {user.name}</span>
                 <Link href="/history">
                   <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
                     My Classes
                   </Button>
                 </Link>
+                {isAdmin && (
+                  <Link href="/admin">
+                    <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                {isTeacher && (
+                  <Link href="/admin">
+                    <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
+                      My Schedule
+                    </Button>
+                  </Link>
+                )}
                 <Button 
                   variant="outline" 
                   onClick={logout}
@@ -59,7 +155,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            {isAuthenticated && user && <NotificationBell />}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-[#662506]">
@@ -75,7 +172,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </nav>
                   <div className="h-px bg-[#fee391] w-full" />
                   <div className="flex flex-col gap-4">
-                    {user ? (
+                    {isAuthenticated && user ? (
                       <>
                         <span className="text-sm font-medium text-[#662506]">Signed in as {user.name}</span>
                         <Link href="/history" onClick={() => setIsOpen(false)}>
@@ -83,6 +180,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             My Classes
                           </Button>
                         </Link>
+                        {isAdmin && (
+                          <Link href="/admin" onClick={() => setIsOpen(false)}>
+                            <Button variant="ghost" className="w-full justify-start text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20 pl-0">
+                              Admin Dashboard
+                            </Button>
+                          </Link>
+                        )}
+                        {isTeacher && (
+                          <Link href="/admin" onClick={() => setIsOpen(false)}>
+                            <Button variant="ghost" className="w-full justify-start text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20 pl-0">
+                              My Schedule
+                            </Button>
+                          </Link>
+                        )}
                         <Button 
                           variant="outline" 
                           onClick={() => { logout(); setIsOpen(false); }}

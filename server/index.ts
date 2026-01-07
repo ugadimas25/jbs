@@ -4,6 +4,8 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import pg from "pg";
 
 const app = express();
 const httpServer = createServer(app);
@@ -30,16 +32,27 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-// Session middleware
+// Session middleware with PostgreSQL store
+const PgSession = connectPgSimple(session);
+const pgPool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
 app.use(
   session({
+    store: new PgSession({
+      pool: pgPool,
+      tableName: 'session', // Will be created automatically
+      createTableIfMissing: true,
+    }),
     secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production", // HTTPS only in production
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
     },
   })
 );
@@ -82,6 +95,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize storage (seed admin user)
+  const { storage } = await import("./storage");
+  await storage.init();
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

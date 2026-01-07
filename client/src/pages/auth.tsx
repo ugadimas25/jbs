@@ -5,22 +5,25 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
 
   const signupMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string; name: string }) => {
+    mutationFn: async (data: { email: string; password: string; name: string; phone?: string }) => {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();
@@ -36,6 +39,7 @@ export default function AuthPage() {
       setName("");
       setEmail("");
       setPassword("");
+      setPhone("");
     },
     onError: (error: Error) => {
       toast({
@@ -52,6 +56,7 @@ export default function AuthPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();
@@ -60,11 +65,12 @@ export default function AuthPage() {
       return response.json();
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
       toast({
         title: "Login successful!",
         description: `Welcome back, ${data.user.name}!`,
       });
-      setLocation("/booking");
+      setLocation("/");
     },
     onError: (error: Error) => {
       toast({
@@ -82,7 +88,7 @@ export default function AuthPage() {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    signupMutation.mutate({ email, password, name });
+    signupMutation.mutate({ email, password, name, phone: phone || undefined });
   };
 
   return (
@@ -134,6 +140,17 @@ export default function AuthPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      className="border-[#fec44f] focus-visible:ring-[#ec7014]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number (Optional)</Label>
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+62 812 3456 7890" 
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                       className="border-[#fec44f] focus-visible:ring-[#ec7014]"
                     />
                   </div>

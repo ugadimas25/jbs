@@ -9,6 +9,10 @@ import Booking from "@/pages/booking";
 import History from "@/pages/history";
 import AuthPage from "@/pages/auth";
 import VerifyEmailPage from "@/pages/verify-email";
+import UploadProof from "@/pages/upload-proof";
+import SelectSchedule from "@/pages/select-schedule";
+import AdminDashboard from "@/pages/admin-dashboard";
+import CourseDetail from "@/pages/course-detail";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,6 +33,26 @@ function Router() {
       <Route path="/history">
         <Layout>
           <History />
+        </Layout>
+      </Route>
+      <Route path="/upload-proof/:id">
+        <Layout>
+          <UploadProof />
+        </Layout>
+      </Route>
+      <Route path="/select-schedule/:id">
+        <Layout>
+          <SelectSchedule />
+        </Layout>
+      </Route>
+      <Route path="/courses/:id">
+        <Layout>
+          <CourseDetail />
+        </Layout>
+      </Route>
+      <Route path="/admin">
+        <Layout>
+          <AdminDashboard />
         </Layout>
       </Route>
       <Route component={NotFound} />
