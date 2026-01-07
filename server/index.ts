@@ -43,12 +43,25 @@ const pgPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
+// Create session table if not exists (manual creation to avoid file path issues in production)
+pgPool.query(`
+  CREATE TABLE IF NOT EXISTS "session" (
+    "sid" varchar NOT NULL COLLATE "default",
+    "sess" json NOT NULL,
+    "expire" timestamp(6) NOT NULL,
+    PRIMARY KEY ("sid")
+  );
+  CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+`).catch(err => {
+  console.error('Failed to create session table:', err);
+});
+
 app.use(
   session({
     store: new PgSession({
       pool: pgPool,
-      tableName: 'session', // Will be created automatically
-      createTableIfMissing: true,
+      tableName: 'session',
+      // Removed createTableIfMissing - we create it manually above
     }),
     secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
     resave: false,
