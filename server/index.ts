@@ -10,6 +10,11 @@ import pg from "pg";
 const app = express();
 const httpServer = createServer(app);
 
+// Trust proxy for production (behind Nginx)
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
@@ -52,7 +57,7 @@ app.use(
       secure: process.env.NODE_ENV === "production", // HTTPS only in production
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      sameSite: "lax", // Changed from "strict" to "lax" for better redirect handling
     },
   })
 );

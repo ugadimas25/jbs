@@ -174,6 +174,13 @@ export async function registerRoutes(
       // Create session
       if (req.session) {
         req.session.userId = user.id;
+        // Explicitly save session before responding
+        await new Promise<void>((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
       }
 
       res.json({
