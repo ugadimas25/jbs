@@ -120,27 +120,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats/Trust Section */}
-      <section className="bg-[#662506] text-[#ffffe5] py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[
-              { num: "5000+", label: lang === "id" ? "Lulusan" : "Graduates" },
-              { num: "10+", label: lang === "id" ? "Tahun Pengalaman" : "Years Experience" },
-              { num: "100%", label: lang === "id" ? "Bersertifikat" : "Certified" },
-              { num: "4.9/5", label: lang === "id" ? "Rating Siswa" : "Student Rating" },
-            ].map((stat, i) => (
-              <div key={i}>
-                <div className="font-serif text-4xl md:text-5xl font-bold text-[#fec44f] mb-2">{stat.num}</div>
-                <div className="text-[#fff7bc]/80 font-medium uppercase tracking-wider text-sm">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Gallery Section */}
+      <Gallery />
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 pb-20">
+      <section className="container mx-auto px-4 py-20">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="relative">
              <div className="absolute inset-0 bg-[#fec44f] rounded-3xl transform rotate-3"></div>
@@ -180,9 +164,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Gallery Section */}
-      <Gallery />
     </div>
   );
 }
