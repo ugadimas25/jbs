@@ -1003,8 +1003,9 @@ export async function registerRoutes(
     try {
       const { titleId, titleEn, descriptionId, descriptionEn, sortOrder } = req.body;
 
-      if (!titleId || !titleEn) {
-        return res.status(400).json({ error: "Title in both languages is required" });
+      // Accept titleId only, use same value for titleEn if not provided
+      if (!titleId) {
+        return res.status(400).json({ error: "Title is required" });
       }
 
       if (!req.file) {
@@ -1016,9 +1017,9 @@ export async function registerRoutes(
 
       const item = await storage.createGalleryItem({
         titleId,
-        titleEn,
+        titleEn: titleEn || titleId, // Use same as Indonesian if not provided
         descriptionId: descriptionId || null,
-        descriptionEn: descriptionEn || null,
+        descriptionEn: descriptionEn || descriptionId || null, // Use same as Indonesian if not provided
         imageUrl: cosResult.url,
         imageKey: cosResult.key,
         sortOrder: parseInt(sortOrder) || 0,
