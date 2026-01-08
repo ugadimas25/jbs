@@ -18,6 +18,8 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   name: text("name").notNull(),
   phone: text("phone"),
+  socialMediaType: text("social_media_type"), // instagram, facebook, tiktok, whatsapp, telegram
+  socialMediaAccount: text("social_media_account"), // username or account name
   role: text("role").notNull().default("user"), // user, admin, teacher
   isVerified: boolean("is_verified").notNull().default(false),
   verificationToken: text("verification_token"),
@@ -132,6 +134,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
 }).extend({
   phone: z.string().optional(),
+  socialMediaType: z.string().optional(),
+  socialMediaAccount: z.string().optional(),
 });
 
 export const loginSchema = z.object({

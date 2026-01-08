@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation, Link } from "wouter";
@@ -18,9 +19,18 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [socialMediaType, setSocialMediaType] = useState("");
+  const [socialMediaAccount, setSocialMediaAccount] = useState("");
 
   const signupMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string; name: string; phone?: string }) => {
+    mutationFn: async (data: { 
+      email: string; 
+      password: string; 
+      name: string; 
+      phone?: string;
+      socialMediaType?: string;
+      socialMediaAccount?: string;
+    }) => {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -42,6 +52,8 @@ export default function AuthPage() {
       setEmail("");
       setPassword("");
       setPhone("");
+      setSocialMediaType("");
+      setSocialMediaAccount("");
     },
     onError: (error: Error) => {
       toast({
@@ -90,7 +102,14 @@ export default function AuthPage() {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    signupMutation.mutate({ email, password, name, phone: phone || undefined });
+    signupMutation.mutate({ 
+      email, 
+      password, 
+      name, 
+      phone: phone || undefined,
+      socialMediaType: socialMediaType || undefined,
+      socialMediaAccount: socialMediaAccount || undefined,
+    });
   };
 
   return (
@@ -156,6 +175,47 @@ export default function AuthPage() {
                       className="border-[#fec44f] focus-visible:ring-[#ec7014]"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="social-media-type">Social Media</Label>
+                    <Select value={socialMediaType} onValueChange={setSocialMediaType}>
+                      <SelectTrigger id="social-media-type" className="border-[#fec44f] focus-visible:ring-[#ec7014]">
+                        <SelectValue placeholder="Pilih jenis social media" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="instagram">Instagram</SelectItem>
+                        <SelectItem value="facebook">Facebook</SelectItem>
+                        <SelectItem value="tiktok">TikTok</SelectItem>
+                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                        <SelectItem value="telegram">Telegram</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {socialMediaType && (
+                    <div className="space-y-2">
+                      <Label htmlFor="social-media-account">
+                        {socialMediaType === "instagram" ? "Username Instagram" :
+                         socialMediaType === "facebook" ? "Nama Facebook" :
+                         socialMediaType === "tiktok" ? "Username TikTok" :
+                         socialMediaType === "whatsapp" ? "Nomor WhatsApp" :
+                         socialMediaType === "telegram" ? "Username Telegram" :
+                         "Nama Akun"}
+                      </Label>
+                      <Input 
+                        id="social-media-account" 
+                        placeholder={
+                          socialMediaType === "instagram" ? "@username" :
+                          socialMediaType === "facebook" ? "Your Name" :
+                          socialMediaType === "tiktok" ? "@username" :
+                          socialMediaType === "whatsapp" ? "+62 812 3456 7890" :
+                          socialMediaType === "telegram" ? "@username" :
+                          "Account name"
+                        }
+                        value={socialMediaAccount}
+                        onChange={(e) => setSocialMediaAccount(e.target.value)}
+                        className="border-[#fec44f] focus-visible:ring-[#ec7014]"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="password-signup">{t("auth.password")}</Label>
                     <Input 

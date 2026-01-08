@@ -245,6 +245,8 @@ export class DatabaseStorage implements IStorage {
       password: insertUser.password,
       name: insertUser.name,
       phone: insertUser.phone || null,
+      socialMediaType: insertUser.socialMediaType || null,
+      socialMediaAccount: insertUser.socialMediaAccount || null,
       role: "user",
       isVerified: isDev,
       verificationToken: insertUser.verificationToken,
