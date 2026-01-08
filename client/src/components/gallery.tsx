@@ -15,40 +15,6 @@ interface GalleryItem {
   isActive: boolean;
 }
 
-// Fallback gallery items if API has no data
-const fallbackGalleryItems: GalleryItem[] = [
-  {
-    id: "1",
-    titleId: "Workshop Makeup",
-    titleEn: "Makeup Workshop",
-    descriptionId: "Siswa mempraktikkan teknik makeup profesional dengan produk standar industri",
-    descriptionEn: "Students practicing professional makeup techniques with industry-standard products",
-    imageUrl: "/gallery/activity1.png",
-    sortOrder: 1,
-    isActive: true,
-  },
-  {
-    id: "2",
-    titleId: "Kelas Nail Art",
-    titleEn: "Nail Art Class",
-    descriptionId: "Belajar desain nail art rumit dan aplikasi gel polish",
-    descriptionEn: "Learning intricate nail art designs and gel polish application",
-    imageUrl: "/gallery/activity2.png",
-    sortOrder: 2,
-    isActive: true,
-  },
-  {
-    id: "3",
-    titleId: "Pelatihan Eyelash Extension",
-    titleEn: "Eyelash Extension Training",
-    descriptionId: "Praktik langsung untuk ekstensi bulu mata klasik dan volume",
-    descriptionEn: "Hands-on practice for classic and volume lash extensions",
-    imageUrl: "/gallery/activity3.png",
-    sortOrder: 3,
-    isActive: true,
-  },
-];
-
 export default function Gallery() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { t, lang } = useI18n();
@@ -64,10 +30,8 @@ export default function Gallery() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Use API data or fallback
-  const galleryItems: GalleryItem[] = galleryData?.gallery?.length > 0 
-    ? galleryData.gallery 
-    : fallbackGalleryItems;
+  // Use API data only (no fallback)
+  const galleryItems: GalleryItem[] = galleryData?.gallery || [];
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % galleryItems.length);

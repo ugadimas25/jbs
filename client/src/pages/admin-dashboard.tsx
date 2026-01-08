@@ -40,10 +40,8 @@ export default function AdminDashboard() {
   const [galleryDialog, setGalleryDialog] = useState(false);
   const [editingGallery, setEditingGallery] = useState<any>(null);
   const [galleryForm, setGalleryForm] = useState({
-    titleId: "",
-    titleEn: "",
-    descriptionId: "",
-    descriptionEn: "",
+    title: "",
+    description: "",
     sortOrder: 0,
     isActive: true,
   });
@@ -396,10 +394,8 @@ export default function AdminDashboard() {
     setGalleryDialog(false);
     setEditingGallery(null);
     setGalleryForm({
-      titleId: "",
-      titleEn: "",
-      descriptionId: "",
-      descriptionEn: "",
+      title: "",
+      description: "",
       sortOrder: 0,
       isActive: true,
     });
@@ -407,13 +403,14 @@ export default function AdminDashboard() {
     setGalleryImagePreview(null);
   };
 
-  // Handle gallery form submit
+  // Handle gallery form submit - auto copy Indonesian to English
   const handleGallerySubmit = () => {
     const formData = new FormData();
-    formData.append("titleId", galleryForm.titleId);
-    formData.append("titleEn", galleryForm.titleEn);
-    formData.append("descriptionId", galleryForm.descriptionId);
-    formData.append("descriptionEn", galleryForm.descriptionEn);
+    // Use same text for both Indonesian and English
+    formData.append("titleId", galleryForm.title);
+    formData.append("titleEn", galleryForm.title);
+    formData.append("descriptionId", galleryForm.description);
+    formData.append("descriptionEn", galleryForm.description);
     formData.append("sortOrder", galleryForm.sortOrder.toString());
     formData.append("isActive", galleryForm.isActive.toString());
     
@@ -445,10 +442,8 @@ export default function AdminDashboard() {
   const openGalleryEdit = (item: any) => {
     setEditingGallery(item);
     setGalleryForm({
-      titleId: item.titleId,
-      titleEn: item.titleEn,
-      descriptionId: item.descriptionId || "",
-      descriptionEn: item.descriptionEn || "",
+      title: item.titleId,
+      description: item.descriptionId || "",
       sortOrder: item.sortOrder,
       isActive: item.isActive,
     });
@@ -1222,24 +1217,24 @@ export default function AdminDashboard() {
           <TabsContent value="gallery">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-[#662506]">Gallery Management</CardTitle>
+                <CardTitle className="text-[#662506]">Kelola Galeri</CardTitle>
                 <Dialog open={galleryDialog} onOpenChange={(open) => {
                   if (!open) resetGalleryForm();
                   else setGalleryDialog(true);
                 }}>
                   <DialogTrigger asChild>
                     <Button className="bg-[#ec7014] hover:bg-[#cc4c02]">
-                      <Plus className="w-4 h-4 mr-2" /> Add Image
+                      <Plus className="w-4 h-4 mr-2" /> Tambah Foto
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>{editingGallery ? "Edit Gallery Item" : "Add New Gallery Item"}</DialogTitle>
+                      <DialogTitle>{editingGallery ? "Edit Item Galeri" : "Tambah Item Galeri"}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       {/* Image Upload */}
                       <div className="space-y-2">
-                        <Label>Image *</Label>
+                        <Label>Foto *</Label>
                         <div className="flex flex-col gap-3">
                           {galleryImagePreview && (
                             <div className="relative w-full h-48 rounded-lg overflow-hidden border">
@@ -1257,63 +1252,42 @@ export default function AdminDashboard() {
                             className="cursor-pointer"
                           />
                           {!editingGallery && !galleryImage && (
-                            <p className="text-sm text-red-500">Image is required</p>
+                            <p className="text-sm text-red-500">Foto wajib diisi</p>
                           )}
                         </div>
                       </div>
 
                       {/* Title ID */}
                       <div className="space-y-2">
-                        <Label>Judul (Indonesian) *</Label>
+                        <Label>Judul *</Label>
                         <Input 
-                          value={galleryForm.titleId}
-                          onChange={(e) => setGalleryForm(prev => ({ ...prev, titleId: e.target.value }))}
-                          placeholder="Judul dalam Bahasa Indonesia"
-                        />
-                      </div>
-
-                      {/* Title EN */}
-                      <div className="space-y-2">
-                        <Label>Title (English) *</Label>
-                        <Input 
-                          value={galleryForm.titleEn}
-                          onChange={(e) => setGalleryForm(prev => ({ ...prev, titleEn: e.target.value }))}
-                          placeholder="Title in English"
+                          value={galleryForm.title}
+                          onChange={(e) => setGalleryForm(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="Contoh: Workshop Makeup Profesional"
                         />
                       </div>
 
                       {/* Description ID */}
                       <div className="space-y-2">
-                        <Label>Deskripsi (Indonesian)</Label>
+                        <Label>Deskripsi</Label>
                         <Textarea 
-                          value={galleryForm.descriptionId}
-                          onChange={(e) => setGalleryForm(prev => ({ ...prev, descriptionId: e.target.value }))}
-                          placeholder="Deskripsi dalam Bahasa Indonesia"
-                          rows={3}
-                        />
-                      </div>
-
-                      {/* Description EN */}
-                      <div className="space-y-2">
-                        <Label>Description (English)</Label>
-                        <Textarea 
-                          value={galleryForm.descriptionEn}
-                          onChange={(e) => setGalleryForm(prev => ({ ...prev, descriptionEn: e.target.value }))}
-                          placeholder="Description in English"
+                          value={galleryForm.description}
+                          onChange={(e) => setGalleryForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Deskripsi singkat tentang foto ini"
                           rows={3}
                         />
                       </div>
 
                       {/* Sort Order */}
                       <div className="space-y-2">
-                        <Label>Sort Order</Label>
+                        <Label>Urutan</Label>
                         <Input 
                           type="number"
                           value={galleryForm.sortOrder}
                           onChange={(e) => setGalleryForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))}
                           placeholder="0"
                         />
-                        <p className="text-xs text-gray-500">Lower number = appears first</p>
+                        <p className="text-xs text-gray-500">Angka lebih kecil = tampil lebih dulu</p>
                       </div>
 
                       {/* Active Toggle */}
@@ -1322,7 +1296,7 @@ export default function AdminDashboard() {
                           checked={galleryForm.isActive}
                           onCheckedChange={(checked) => setGalleryForm(prev => ({ ...prev, isActive: checked }))}
                         />
-                        <Label>Active (visible on website)</Label>
+                        <Label>Aktif (tampil di website)</Label>
                       </div>
                     </div>
                     <DialogFooter>
@@ -1330,13 +1304,12 @@ export default function AdminDashboard() {
                         variant="outline"
                         onClick={resetGalleryForm}
                       >
-                        Cancel
+                        Batal
                       </Button>
                       <Button
                         onClick={handleGallerySubmit}
                         disabled={
-                          !galleryForm.titleId || 
-                          !galleryForm.titleEn || 
+                          !galleryForm.title || 
                           (!editingGallery && !galleryImage) ||
                           createGalleryMutation.isPending ||
                           updateGalleryMutation.isPending
@@ -1344,8 +1317,8 @@ export default function AdminDashboard() {
                         className="bg-[#662506] hover:bg-[#993404]"
                       >
                         {(createGalleryMutation.isPending || updateGalleryMutation.isPending) 
-                          ? "Saving..." 
-                          : editingGallery ? "Update" : "Add"
+                          ? "Menyimpan..." 
+                          : editingGallery ? "Update" : "Tambah"
                         }
                       </Button>
                     </DialogFooter>
@@ -1356,13 +1329,13 @@ export default function AdminDashboard() {
                 {galleryLoading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#ec7014] mx-auto"></div>
-                    <p className="text-gray-500 mt-2">Loading gallery...</p>
+                    <p className="text-gray-500 mt-2">Memuat galeri...</p>
                   </div>
                 ) : !galleryData?.gallery || galleryData.gallery.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Image className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                    <p>No gallery items yet</p>
-                    <p className="text-sm">Click "Add Image" to add your first gallery item</p>
+                    <p>Belum ada item galeri</p>
+                    <p className="text-sm">Klik "Tambah Foto" untuk menambahkan foto pertama</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
