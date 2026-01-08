@@ -93,6 +93,8 @@ export default function UploadProof() {
       });
     },
     onError: (error: any) => {
+      console.error("Upload error:", error);
+      alert(`Upload error: ${error.message}`); // Debug: show error
       toast({
         title: "Upload Failed",
         description: error.message || "Failed to upload payment proof",
