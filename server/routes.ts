@@ -321,37 +321,48 @@ export async function registerRoutes(
 
   // Upload payment proof
   app.post("/api/bookings/:id/upload-proof", requireAuth, (req: any, res: any, next: any) => {
-    upload.single("proof")(req, res, (err: any) => {
-      if (err) {
-        console.error("Multer error:", err);
-        return res.status(400).json({ error: err.message || "File upload failed" });
-      }
-      next();
-    });
+    console.log("[UPLOAD] Starting upload for booking:", req.params.id);
+    try {
+      upload.single("proof")(req, res, (err: any) => {
+        if (err) {
+          console.error("[UPLOAD] Multer error:", err);
+          return res.status(400).json({ error: err.message || "File upload failed" });
+        }
+        console.log("[UPLOAD] File uploaded to memory successfully");
+        next();
+      });
+    } catch (error: any) {
+      console.error("[UPLOAD] Outer error:", error);
+      return res.status(500).json({ error: error.message || "Upload initialization failed" });
+    }
   }, async (req: any, res) => {
     try {
-      console.log("Upload endpoint hit, booking ID:", req.params.id);
-      console.log("File received:", req.file ? req.file.originalname : "No file");
+      console.log("[UPLOAD] Processing upload, booking ID:", req.params.id);
+      console.log("[UPLOAD] File received:", req.file ? req.file.originalname : "No file");
+      console.log("[UPLOAD] User ID:", req.user?.id);
       
       const booking = await storage.getBooking(req.params.id);
       if (!booking) {
+        console.error("[UPLOAD] Booking not found:", req.params.id);
         return res.status(404).json({ error: "Booking not found" });
       }
       if (booking.userId !== req.user.id) {
+        console.error("[UPLOAD] Access denied. Booking user:", booking.userId, "Request user:", req.user.id);
         return res.status(403).json({ error: "Access denied" });
       }
       if (!req.file) {
+        console.error("[UPLOAD] No file in request");
         return res.status(400).json({ error: "No file uploaded" });
       }
 
       // Upload to Tencent COS
-      console.log("Uploading to COS...");
+      console.log("[UPLOAD] Starting COS upload...");
       const result = await uploadToCOS(
         req.file.buffer,
         req.file.originalname,
         req.file.mimetype
       );
-      console.log("File uploaded to COS:", result.url);
+      console.log("[UPLOAD] COS upload successful:", result.url);
 
       const updatedBooking = await storage.updateBooking(req.params.id, {
         paymentProof: result.url,
@@ -365,9 +376,11 @@ export async function registerRoutes(
         link: `/history`,
       });
 
+      console.log("[UPLOAD] Upload complete, sending response");
       res.json({ booking: updatedBooking });
     } catch (error: any) {
-      console.error("Upload proof error:", error);
+      console.error("[UPLOAD] Handler error:", error);
+      console.error("[UPLOAD] Error stack:", error.stack);
       res.status(500).json({ error: error.message || "Failed to upload proof" });
     }
   });
