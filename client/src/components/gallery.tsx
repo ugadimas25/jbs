@@ -122,12 +122,12 @@ export default function Gallery() {
           </Button>
 
           {/* Gallery Items */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-8">
             {visibleItems.map((item, idx) => (
               <div
                 key={item.id}
                 className={`bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 ${
-                  idx === 0 ? "block" : "hidden md:block"
+                  idx === 0 ? "block" : idx === 1 ? "hidden sm:block" : "hidden lg:block"
                 }`}
               >
                 <div className="aspect-[4/3] overflow-hidden">
