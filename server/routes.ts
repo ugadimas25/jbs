@@ -1128,5 +1128,194 @@ export async function registerRoutes(
     }
   });
 
+  // ==================== CLASS ROUTES ====================
+
+  // Get all active classes (public)
+  app.get("/api/classes", async (req, res) => {
+    try {
+      const items = await storage.getActiveClasses();
+      res.json({ items });
+    } catch (error: any) {
+      console.error("Get classes error:", error);
+      res.status(500).json({ error: "Failed to get classes" });
+    }
+  });
+
+  // Get class by slug (public)
+  app.get("/api/classes/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const item = await storage.getClassBySlug(slug);
+      if (!item) {
+        return res.status(404).json({ error: "Class not found" });
+      }
+      res.json({ item });
+    } catch (error: any) {
+      console.error("Get class error:", error);
+      res.status(500).json({ error: "Failed to get class" });
+    }
+  });
+
+  // Get all classes (admin only)
+  app.get("/api/admin/classes", requireAdmin, async (req: any, res) => {
+    try {
+      const items = await storage.getAllClasses();
+      res.json({ items });
+    } catch (error: any) {
+      console.error("Get all classes error:", error);
+      res.status(500).json({ error: "Failed to get classes" });
+    }
+  });
+
+  // Create class (admin only)
+  app.post("/api/admin/classes", requireAdmin, handleMulterUpload(upload.single("image")), async (req: any, res) => {
+    try {
+      const { slug, nameId, nameEn, descriptionId, descriptionEn, shortDescId, shortDescEn, duration, price, features, sortOrder, isActive } = req.body;
+
+      if (!slug || !nameId) {
+        return res.status(400).json({ error: "Slug and name are required" });
+      }
+
+      // Check if slug already exists
+      const existing = await storage.getClassBySlug(slug);
+      if (existing) {
+        return res.status(400).json({ error: "Class with this slug already exists" });
+      }
+
+      let imageUrl = null;
+      let imageKey = null;
+
+      if (req.file) {
+        const cosResult = await uploadToCOS(req.file.buffer, req.file.originalname, req.file.mimetype);
+        imageUrl = cosResult.url;
+        imageKey = cosResult.key;
+      }
+
+      // Parse features if it's a string
+      let parsedFeatures = features;
+      if (typeof features === 'string') {
+        try {
+          parsedFeatures = JSON.parse(features);
+        } catch {
+          parsedFeatures = features.split(',').map((f: string) => f.trim()).filter(Boolean);
+        }
+      }
+
+      const item = await storage.createClass({
+        slug,
+        nameId,
+        nameEn: nameEn || nameId,
+        descriptionId: descriptionId || null,
+        descriptionEn: descriptionEn || descriptionId || null,
+        shortDescId: shortDescId || null,
+        shortDescEn: shortDescEn || shortDescId || null,
+        imageUrl,
+        imageKey,
+        duration: duration || null,
+        price: price ? parseInt(price) : null,
+        features: parsedFeatures || [],
+        sortOrder: parseInt(sortOrder) || 0,
+      });
+
+      res.status(201).json({ item });
+    } catch (error: any) {
+      console.error("Create class error:", error);
+      res.status(500).json({ error: "Failed to create class" });
+    }
+  });
+
+  // Update class (admin only)
+  app.put("/api/admin/classes/:id", requireAdmin, handleMulterUpload(upload.single("image")), async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { slug, nameId, nameEn, descriptionId, descriptionEn, shortDescId, shortDescEn, duration, price, features, sortOrder, isActive } = req.body;
+
+      const existingItem = await storage.getClass(id);
+      if (!existingItem) {
+        return res.status(404).json({ error: "Class not found" });
+      }
+
+      // Check if slug already exists for different class
+      if (slug && slug !== existingItem.slug) {
+        const slugExists = await storage.getClassBySlug(slug);
+        if (slugExists) {
+          return res.status(400).json({ error: "Class with this slug already exists" });
+        }
+      }
+
+      // Parse features if it's a string
+      let parsedFeatures = features;
+      if (typeof features === 'string') {
+        try {
+          parsedFeatures = JSON.parse(features);
+        } catch {
+          parsedFeatures = features.split(',').map((f: string) => f.trim()).filter(Boolean);
+        }
+      }
+
+      const updateData: any = {
+        slug: slug || existingItem.slug,
+        nameId: nameId || existingItem.nameId,
+        nameEn: nameEn || existingItem.nameEn,
+        descriptionId: descriptionId !== undefined ? descriptionId : existingItem.descriptionId,
+        descriptionEn: descriptionEn !== undefined ? descriptionEn : existingItem.descriptionEn,
+        shortDescId: shortDescId !== undefined ? shortDescId : existingItem.shortDescId,
+        shortDescEn: shortDescEn !== undefined ? shortDescEn : existingItem.shortDescEn,
+        duration: duration !== undefined ? duration : existingItem.duration,
+        price: price !== undefined ? parseInt(price) : existingItem.price,
+        features: parsedFeatures !== undefined ? parsedFeatures : existingItem.features,
+        sortOrder: sortOrder !== undefined ? parseInt(sortOrder) : existingItem.sortOrder,
+        isActive: isActive !== undefined ? isActive === "true" || isActive === true : existingItem.isActive,
+      };
+
+      // If new image uploaded, update COS
+      if (req.file) {
+        if (existingItem.imageKey) {
+          try {
+            await deleteFromCOS(existingItem.imageKey);
+          } catch (e) {
+            console.error("Failed to delete old image from COS:", e);
+          }
+        }
+        const cosResult = await uploadToCOS(req.file.buffer, req.file.originalname, req.file.mimetype);
+        updateData.imageUrl = cosResult.url;
+        updateData.imageKey = cosResult.key;
+      }
+
+      const updatedItem = await storage.updateClass(id, updateData);
+      res.json({ item: updatedItem });
+    } catch (error: any) {
+      console.error("Update class error:", error);
+      res.status(500).json({ error: "Failed to update class" });
+    }
+  });
+
+  // Delete class (admin only)
+  app.delete("/api/admin/classes/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+
+      const existingItem = await storage.getClass(id);
+      if (!existingItem) {
+        return res.status(404).json({ error: "Class not found" });
+      }
+
+      // Delete image from COS
+      if (existingItem.imageKey) {
+        try {
+          await deleteFromCOS(existingItem.imageKey);
+        } catch (e) {
+          console.error("Failed to delete image from COS:", e);
+        }
+      }
+
+      await storage.deleteClass(id);
+      res.json({ message: "Class deleted successfully" });
+    } catch (error: any) {
+      console.error("Delete class error:", error);
+      res.status(500).json({ error: "Failed to delete class" });
+    }
+  });
+
   return httpServer;
 }

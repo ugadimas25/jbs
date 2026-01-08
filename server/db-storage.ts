@@ -1,13 +1,14 @@
 import { eq, desc, and, asc } from "drizzle-orm";
 import { db } from "./db";
 import {
-  users, bookings, teachers, notifications, rescheduleRequests, gallery,
+  users, bookings, teachers, notifications, rescheduleRequests, gallery, classes,
   type User, type InsertUser,
   type Booking, type InsertBooking,
   type Teacher, type InsertTeacher,
   type Notification, type InsertNotification,
   type RescheduleRequest, type InsertRescheduleRequest,
-  type Gallery, type InsertGallery
+  type Gallery, type InsertGallery,
+  type Class, type InsertClass
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -388,6 +389,62 @@ export class DatabaseStorage implements IStorage {
 
   async deleteGalleryItem(id: string): Promise<boolean> {
     const result = await db.delete(gallery).where(eq(gallery.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // ==================== CLASS METHODS ====================
+
+  async createClass(insertItem: InsertClass): Promise<Class> {
+    const [item] = await db.insert(classes).values({
+      slug: insertItem.slug,
+      nameId: insertItem.nameId,
+      nameEn: insertItem.nameEn,
+      descriptionId: insertItem.descriptionId,
+      descriptionEn: insertItem.descriptionEn,
+      shortDescId: insertItem.shortDescId,
+      shortDescEn: insertItem.shortDescEn,
+      imageUrl: insertItem.imageUrl,
+      imageKey: insertItem.imageKey,
+      duration: insertItem.duration,
+      price: insertItem.price,
+      features: insertItem.features as string[] | null,
+      sortOrder: insertItem.sortOrder || 0,
+      isActive: true,
+    }).returning();
+    
+    return item;
+  }
+
+  async getClass(id: string): Promise<Class | undefined> {
+    const [item] = await db.select().from(classes).where(eq(classes.id, id)).limit(1);
+    return item;
+  }
+
+  async getClassBySlug(slug: string): Promise<Class | undefined> {
+    const [item] = await db.select().from(classes).where(eq(classes.slug, slug)).limit(1);
+    return item;
+  }
+
+  async getAllClasses(): Promise<Class[]> {
+    return await db.select().from(classes).orderBy(asc(classes.sortOrder));
+  }
+
+  async getActiveClasses(): Promise<Class[]> {
+    return await db.select().from(classes)
+      .where(eq(classes.isActive, true))
+      .orderBy(asc(classes.sortOrder));
+  }
+
+  async updateClass(id: string, data: Partial<Class>): Promise<Class | undefined> {
+    const [updatedItem] = await db.update(classes)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(classes.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  async deleteClass(id: string): Promise<boolean> {
+    const result = await db.delete(classes).where(eq(classes.id, id)).returning();
     return result.length > 0;
   }
 }

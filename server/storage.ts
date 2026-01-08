@@ -4,7 +4,8 @@ import {
   type Teacher, type InsertTeacher,
   type Notification, type InsertNotification,
   type RescheduleRequest, type InsertRescheduleRequest,
-  type Gallery, type InsertGallery
+  type Gallery, type InsertGallery,
+  type Class, type InsertClass
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -59,6 +60,15 @@ export interface IStorage {
   getActiveGalleryItems(): Promise<Gallery[]>;
   updateGalleryItem(id: string, data: Partial<Gallery>): Promise<Gallery | undefined>;
   deleteGalleryItem(id: string): Promise<boolean>;
+
+  // Class methods
+  createClass(item: InsertClass): Promise<Class>;
+  getClass(id: string): Promise<Class | undefined>;
+  getClassBySlug(slug: string): Promise<Class | undefined>;
+  getAllClasses(): Promise<Class[]>;
+  getActiveClasses(): Promise<Class[]>;
+  updateClass(id: string, data: Partial<Class>): Promise<Class | undefined>;
+  deleteClass(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {

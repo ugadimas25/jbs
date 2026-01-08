@@ -103,6 +103,27 @@ export const gallery = pgTable("gallery", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// ==================== CLASSES TABLE ====================
+export const classes = pgTable("classes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull().unique(), // e.g., "makeup", "nail", "eyelash"
+  nameId: text("name_id").notNull(), // Indonesian name
+  nameEn: text("name_en").notNull(), // English name
+  descriptionId: text("description_id"), // Indonesian description
+  descriptionEn: text("description_en"), // English description
+  shortDescId: text("short_desc_id"), // Short Indonesian description
+  shortDescEn: text("short_desc_en"), // Short English description
+  imageUrl: text("image_url"), // COS URL
+  imageKey: text("image_key"), // COS key for deletion
+  duration: text("duration"), // e.g., "3-6 months"
+  price: integer("price"), // Price in IDR
+  features: json("features").$type<string[]>(), // List of features
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // ==================== SCHEMAS & TYPES ====================
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -157,6 +178,22 @@ export const insertGallerySchema = createInsertSchema(gallery).pick({
   sortOrder: true,
 });
 
+export const insertClassSchema = createInsertSchema(classes).pick({
+  slug: true,
+  nameId: true,
+  nameEn: true,
+  descriptionId: true,
+  descriptionEn: true,
+  shortDescId: true,
+  shortDescEn: true,
+  imageUrl: true,
+  imageKey: true,
+  duration: true,
+  price: true,
+  features: true,
+  sortOrder: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -176,3 +213,6 @@ export type InsertRescheduleRequest = z.infer<typeof insertRescheduleRequestSche
 
 export type Gallery = typeof gallery.$inferSelect;
 export type InsertGallery = z.infer<typeof insertGallerySchema>;
+
+export type Class = typeof classes.$inferSelect;
+export type InsertClass = z.infer<typeof insertClassSchema>;

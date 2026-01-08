@@ -11,11 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { 
   CheckCircle, XCircle, Clock, Users, BookOpen, Calendar, 
-  UserCog, Plus, Trash2, Eye, FileImage, AlertCircle, Image, Edit, GripVertical
+  UserCog, Plus, Trash2, Eye, FileImage, AlertCircle, Image as ImageIcon, Edit, Edit2, GripVertical, X
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -47,6 +48,26 @@ export default function AdminDashboard() {
   });
   const [galleryImage, setGalleryImage] = useState<File | null>(null);
   const [galleryImagePreview, setGalleryImagePreview] = useState<string | null>(null);
+
+  // State for Classes management
+  const [classDialog, setClassDialog] = useState(false);
+  const [editingClass, setEditingClass] = useState<any>(null);
+  const [classForm, setClassForm] = useState({
+    slug: "",
+    nameId: "",
+    nameEn: "",
+    descriptionId: "",
+    descriptionEn: "",
+    shortDescId: "",
+    shortDescEn: "",
+    duration: "",
+    price: "",
+    features: "",
+    sortOrder: 0,
+    isActive: true,
+  });
+  const [classImage, setClassImage] = useState<File | null>(null);
+  const [classImagePreview, setClassImagePreview] = useState<string | null>(null);
 
   // Redirect if not admin or teacher
   useEffect(() => {
@@ -121,6 +142,17 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const res = await fetch("/api/admin/gallery", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch gallery");
+      return res.json();
+    },
+    enabled: isAdmin,
+  });
+
+  // Fetch classes (for admin)
+  const { data: classesData, isLoading: classesLoading } = useQuery({
+    queryKey: ["admin", "classes"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/classes", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch classes");
       return res.json();
     },
     enabled: isAdmin,
@@ -478,6 +510,206 @@ export default function AdminDashboard() {
     setGalleryDialog(true);
   };
 
+  // ==================== CLASS MUTATIONS & HANDLERS ====================
+
+  // Class create mutation
+  const createClassMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const res = await fetch("/api/admin/classes", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server error: Invalid response format");
+      }
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || error.message || "Failed to create class");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "classes"] });
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      resetClassForm();
+      toast({
+        title: "Success",
+        description: "Class created successfully.",
+        className: "bg-green-600 text-white border-none",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create class",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Class update mutation
+  const updateClassMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      const res = await fetch(`/api/admin/classes/${id}`, {
+        method: "PUT",
+        credentials: "include",
+        body: formData,
+      });
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server error: Invalid response format");
+      }
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || error.message || "Failed to update class");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "classes"] });
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      resetClassForm();
+      toast({
+        title: "Success",
+        description: "Class updated successfully.",
+        className: "bg-green-600 text-white border-none",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update class",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Class delete mutation
+  const deleteClassMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/classes/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server error: Invalid response format");
+      }
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || error.message || "Failed to delete class");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "classes"] });
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      toast({
+        title: "Success",
+        description: "Class deleted successfully.",
+        className: "bg-green-600 text-white border-none",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete class",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Helper function to reset class form
+  const resetClassForm = () => {
+    setClassDialog(false);
+    setEditingClass(null);
+    setClassForm({
+      slug: "",
+      nameId: "",
+      nameEn: "",
+      descriptionId: "",
+      descriptionEn: "",
+      shortDescId: "",
+      shortDescEn: "",
+      duration: "",
+      price: "",
+      features: "",
+      sortOrder: 0,
+      isActive: true,
+    });
+    setClassImage(null);
+    setClassImagePreview(null);
+  };
+
+  // Handle class form submit
+  const handleClassSubmit = () => {
+    const formData = new FormData();
+    formData.append("slug", classForm.slug);
+    formData.append("nameId", classForm.nameId);
+    formData.append("nameEn", classForm.nameEn || classForm.nameId);
+    formData.append("descriptionId", classForm.descriptionId);
+    formData.append("descriptionEn", classForm.descriptionEn || classForm.descriptionId);
+    formData.append("shortDescId", classForm.shortDescId);
+    formData.append("shortDescEn", classForm.shortDescEn || classForm.shortDescId);
+    formData.append("duration", classForm.duration);
+    formData.append("price", classForm.price);
+    formData.append("features", classForm.features);
+    formData.append("sortOrder", classForm.sortOrder.toString());
+    formData.append("isActive", classForm.isActive.toString());
+    
+    if (classImage) {
+      formData.append("image", classImage);
+    }
+
+    if (editingClass) {
+      updateClassMutation.mutate({ id: editingClass.id, formData });
+    } else {
+      createClassMutation.mutate(formData);
+    }
+  };
+
+  // Handle class image change
+  const handleClassImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setClassImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setClassImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Open class edit dialog
+  const openClassEdit = (item: any) => {
+    setEditingClass(item);
+    setClassForm({
+      slug: item.slug,
+      nameId: item.nameId,
+      nameEn: item.nameEn || "",
+      descriptionId: item.descriptionId || "",
+      descriptionEn: item.descriptionEn || "",
+      shortDescId: item.shortDescId || "",
+      shortDescEn: item.shortDescEn || "",
+      duration: item.duration || "",
+      price: item.price?.toString() || "",
+      features: Array.isArray(item.features) ? item.features.join(", ") : (item.features || ""),
+      sortOrder: item.sortOrder,
+      isActive: item.isActive,
+    });
+    setClassImagePreview(item.imageUrl);
+    setClassDialog(true);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
       pending_payment: { variant: "outline", label: "Pending Payment" },
@@ -615,35 +847,40 @@ export default function AdminDashboard() {
 
         {/* Main Tabs */}
         <Tabs defaultValue={isTeacher ? "my-schedule" : "approval"} className="space-y-6">
-          <TabsList className={`grid w-full bg-[#fff7bc] ${isAdmin ? "grid-cols-6" : "grid-cols-1"}`}>
-            {isAdmin && (
-              <>
-                <TabsTrigger value="approval" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
-                  Approval
+          <div className="overflow-x-auto">
+            <TabsList className={`inline-flex w-auto min-w-full bg-[#fff7bc] ${isAdmin ? "" : ""}`}>
+              {isAdmin && (
+                <>
+                  <TabsTrigger value="approval" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Approval
+                  </TabsTrigger>
+                  <TabsTrigger value="reschedule" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Reschedule ({pendingReschedules.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="schedule" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Schedule
+                  </TabsTrigger>
+                  <TabsTrigger value="students" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Students
+                  </TabsTrigger>
+                  <TabsTrigger value="teachers" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Teachers
+                  </TabsTrigger>
+                  <TabsTrigger value="classes" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Classes
+                  </TabsTrigger>
+                  <TabsTrigger value="gallery" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Gallery
+                  </TabsTrigger>
+                </>
+              )}
+              {isTeacher && (
+                <TabsTrigger value="my-schedule" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                  My Schedule
                 </TabsTrigger>
-                <TabsTrigger value="reschedule" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
-                  Reschedule ({pendingReschedules.length})
-                </TabsTrigger>
-                <TabsTrigger value="schedule" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
-                  Schedule
-                </TabsTrigger>
-                <TabsTrigger value="students" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
-                  Students
-                </TabsTrigger>
-                <TabsTrigger value="teachers" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
-                  Teachers
-                </TabsTrigger>
-                <TabsTrigger value="gallery" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
-                  Gallery
-                </TabsTrigger>
-              </>
-            )}
-            {isTeacher && (
-              <TabsTrigger value="my-schedule" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
-                My Schedule
-              </TabsTrigger>
-            )}
-          </TabsList>
+              )}
+            </TabsList>
+          </div>
 
           {/* Teacher's My Schedule Tab */}
           {isTeacher && (
@@ -1239,6 +1476,272 @@ export default function AdminDashboard() {
           </TabsContent>
           )}
 
+          {/* Classes Tab */}
+          {isAdmin && (
+          <TabsContent value="classes">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-[#662506]">Kelola Kelas</CardTitle>
+                <Dialog open={classDialog} onOpenChange={(open) => {
+                  if (!open) resetClassForm();
+                  else setClassDialog(true);
+                }}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-[#ec7014] hover:bg-[#cc4c02]">
+                      <Plus className="w-4 h-4 mr-2" /> Tambah Kelas
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>{editingClass ? "Edit Kelas" : "Tambah Kelas Baru"}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {/* Image Preview */}
+                      <div>
+                        <Label>Foto</Label>
+                        {classImagePreview ? (
+                          <div className="relative mt-2">
+                            <img src={classImagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={() => {
+                                setClassImage(null);
+                                setClassImagePreview(null);
+                              }}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleClassImageChange}
+                              className="hidden"
+                              id="class-image-upload"
+                            />
+                            <label htmlFor="class-image-upload" className="cursor-pointer">
+                              <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+                              <p className="text-gray-500">Klik untuk upload gambar</p>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="class-slug">Slug *</Label>
+                          <Input
+                            id="class-slug"
+                            value={classForm.slug}
+                            onChange={(e) => setClassForm(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }))}
+                            placeholder="contoh: makeup"
+                            disabled={!!editingClass}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Identifier unik (tidak bisa diubah)</p>
+                        </div>
+                        <div>
+                          <Label htmlFor="class-sortOrder">Urutan</Label>
+                          <Input
+                            id="class-sortOrder"
+                            type="number"
+                            value={classForm.sortOrder}
+                            onChange={(e) => setClassForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="class-nameId">Nama (ID) *</Label>
+                          <Input
+                            id="class-nameId"
+                            value={classForm.nameId}
+                            onChange={(e) => setClassForm(prev => ({ ...prev, nameId: e.target.value }))}
+                            placeholder="Kelas Makeup"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="class-nameEn">Nama (EN)</Label>
+                          <Input
+                            id="class-nameEn"
+                            value={classForm.nameEn}
+                            onChange={(e) => setClassForm(prev => ({ ...prev, nameEn: e.target.value }))}
+                            placeholder="Makeup Class"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="class-shortDescId">Deskripsi Singkat (ID)</Label>
+                        <Input
+                          id="class-shortDescId"
+                          value={classForm.shortDescId}
+                          onChange={(e) => setClassForm(prev => ({ ...prev, shortDescId: e.target.value }))}
+                          placeholder="Deskripsi singkat dalam Bahasa Indonesia"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="class-descriptionId">Deskripsi Lengkap (ID)</Label>
+                        <Textarea
+                          id="class-descriptionId"
+                          value={classForm.descriptionId}
+                          onChange={(e) => setClassForm(prev => ({ ...prev, descriptionId: e.target.value }))}
+                          placeholder="Deskripsi lengkap dalam Bahasa Indonesia"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="class-duration">Durasi</Label>
+                          <Input
+                            id="class-duration"
+                            value={classForm.duration}
+                            onChange={(e) => setClassForm(prev => ({ ...prev, duration: e.target.value }))}
+                            placeholder="3-6 bulan"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="class-price">Harga (Rp)</Label>
+                          <Input
+                            id="class-price"
+                            type="number"
+                            value={classForm.price}
+                            onChange={(e) => setClassForm(prev => ({ ...prev, price: e.target.value }))}
+                            placeholder="5000000"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="class-features">Fitur (pisahkan dengan koma)</Label>
+                        <Textarea
+                          id="class-features"
+                          value={classForm.features}
+                          onChange={(e) => setClassForm(prev => ({ ...prev, features: e.target.value }))}
+                          placeholder="Sertifikat, Praktik langsung, Materi lengkap"
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="class-isActive"
+                          checked={classForm.isActive}
+                          onCheckedChange={(checked) => setClassForm(prev => ({ ...prev, isActive: checked }))}
+                        />
+                        <Label htmlFor="class-isActive">Aktif (tampil di website)</Label>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={resetClassForm}>
+                        Batal
+                      </Button>
+                      <Button 
+                        onClick={handleClassSubmit}
+                        className="bg-[#ec7014] hover:bg-[#cc4c02]"
+                        disabled={createClassMutation.isPending || updateClassMutation.isPending}
+                      >
+                        {editingClass ? "Simpan" : "Tambah"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                {classesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#ec7014] mx-auto"></div>
+                    <p className="text-gray-500 mt-2">Memuat kelas...</p>
+                  </div>
+                ) : !classesData?.items || classesData.items.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <BookOpen className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                    <p>Belum ada kelas</p>
+                    <p className="text-sm">Klik "Tambah Kelas" untuk menambahkan kelas pertama</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {classesData.items.map((item: any) => (
+                      <Card key={item.id} className={`overflow-hidden ${!item.isActive ? 'opacity-60' : ''}`}>
+                        <div className="relative h-40">
+                          {item.imageUrl ? (
+                            <img 
+                              src={item.imageUrl} 
+                              alt={item.nameId}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <BookOpen className="w-12 h-12 text-gray-400" />
+                            </div>
+                          )}
+                          {!item.isActive && (
+                            <div className="absolute top-2 left-2">
+                              <Badge variant="secondary">Hidden</Badge>
+                            </div>
+                          )}
+                        </div>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge variant="outline">{item.slug}</Badge>
+                            <span className="text-xs text-gray-500">#{item.sortOrder}</span>
+                          </div>
+                          <h3 className="font-semibold text-[#662506]">{item.nameId}</h3>
+                          <p className="text-sm text-gray-600 line-clamp-2">{item.shortDescId || item.descriptionId}</p>
+                          {item.price && (
+                            <p className="text-sm font-medium text-[#ec7014] mt-1">
+                              Rp {item.price.toLocaleString("id-ID")}
+                            </p>
+                          )}
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openClassEdit(item)}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Hapus Kelas?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Kelas "{item.nameId}" akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteClassMutation.mutate(item.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Hapus
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          )}
+
           {/* Gallery Tab */}
           {isAdmin && (
           <TabsContent value="gallery">
@@ -1360,7 +1863,7 @@ export default function AdminDashboard() {
                   </div>
                 ) : !galleryData?.items || galleryData.items.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    <Image className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                    <ImageIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
                     <p>Belum ada item galeri</p>
                     <p className="text-sm">Klik "Tambah Foto" untuk menambahkan foto pertama</p>
                   </div>
