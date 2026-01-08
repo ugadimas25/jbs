@@ -83,3 +83,52 @@ export function generateVerificationEmail(name: string, verificationUrl: string)
     </html>
   `;
 }
+
+export function generateResetPasswordEmail(name: string, resetUrl: string) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #662506 0%, #993404 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #fff; padding: 30px; border: 1px solid #ddd; border-top: none; }
+        .button { display: inline-block; background: #ec7014; color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .warning { background: #fff7ed; border-left: 4px solid #f97316; padding: 15px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Reset Your Password</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${name},</p>
+          <p>We received a request to reset your password for your Jakarta Beauty School account.</p>
+          <p>Click the button below to reset your password:</p>
+          <p style="text-align: center;">
+            <a href="${resetUrl}" class="button">Reset Password</a>
+          </p>
+          <p>Or copy and paste this link into your browser:</p>
+          <p style="word-break: break-all; color: #666; font-size: 14px;">${resetUrl}</p>
+          <div class="warning">
+            <p style="margin: 0;"><strong>⚠️ Important:</strong></p>
+            <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+              <li>This link will expire in 1 hour</li>
+              <li>If you didn't request a password reset, please ignore this email</li>
+              <li>Your password will remain unchanged until you create a new one</li>
+            </ul>
+          </div>
+          <p>If you have any questions, please contact our support team.</p>
+          <p>Best regards,<br>Jakarta Beauty School Team</p>
+        </div>
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} Jakarta Beauty School. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}

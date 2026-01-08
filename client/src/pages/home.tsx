@@ -4,6 +4,7 @@ import { ArrowRight, Star, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CLASS_TYPES } from "@/lib/constants";
 import { useAuth } from "@/lib/auth-context";
+import Gallery from "@/components/gallery";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -155,6 +156,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Gallery Section */}
+      <Gallery />
     </div>
   );
 }

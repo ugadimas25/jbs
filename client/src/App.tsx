@@ -9,6 +9,8 @@ import Booking from "@/pages/booking";
 import History from "@/pages/history";
 import AuthPage from "@/pages/auth";
 import VerifyEmailPage from "@/pages/verify-email";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import UploadProof from "@/pages/upload-proof";
 import SelectSchedule from "@/pages/select-schedule";
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -20,6 +22,8 @@ function Router() {
     <Switch>
       <Route path="/auth" component={AuthPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/">
         <Layout>
           <Home />

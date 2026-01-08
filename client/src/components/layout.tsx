@@ -118,11 +118,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex items-center gap-3">
                 <NotificationBell />
                 <span className="text-sm font-medium hidden lg:inline-block text-[#662506]">Hello, {user.name}</span>
-                <Link href="/history">
-                  <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
-                    My Classes
-                  </Button>
-                </Link>
+                {!isAdmin && !isTeacher && (
+                  <Link href="/history">
+                    <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
+                      My Classes
+                    </Button>
+                  </Link>
+                )}
                 {isAdmin && (
                   <Link href="/admin">
                     <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
@@ -175,11 +177,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     {isAuthenticated && user ? (
                       <>
                         <span className="text-sm font-medium text-[#662506]">Signed in as {user.name}</span>
-                        <Link href="/history" onClick={() => setIsOpen(false)}>
-                          <Button variant="ghost" className="w-full justify-start text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20 pl-0">
-                            My Classes
-                          </Button>
-                        </Link>
+                        {!isAdmin && !isTeacher && (
+                          <Link href="/history" onClick={() => setIsOpen(false)}>
+                            <Button variant="ghost" className="w-full justify-start text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20 pl-0">
+                              My Classes
+                            </Button>
+                          </Link>
+                        )}
                         {isAdmin && (
                           <Link href="/admin" onClick={() => setIsOpen(false)}>
                             <Button variant="ghost" className="w-full justify-start text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20 pl-0">

@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
-import { sendEmail, generateVerificationEmail } from "./email";
+import { sendEmail, generateVerificationEmail, generateResetPasswordEmail } from "./email";
 import { insertUserSchema, loginSchema, insertBookingSchema, insertTeacherSchema, insertNotificationSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -216,6 +216,89 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Verification error:", error);
       res.status(400).json({ error: error.message || "Failed to verify email" });
+    }
+  });
+
+  // Forgot password endpoint
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if email exists or not (security best practice)
+        return res.json({ message: "If your email is registered, you will receive a password reset link" });
+      }
+
+      // Generate reset token
+      const resetToken = randomBytes(32).toString("hex");
+      const resetExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      // Update user with reset token
+      await storage.updateUser(user.id, {
+        resetPasswordToken: resetToken,
+        resetPasswordExpiry: resetExpiry,
+      });
+
+      // Send reset email
+      const resetUrl = `${process.env.APP_URL}/reset-password?token=${resetToken}`;
+      await sendEmail({
+        to: user.email,
+        subject: "Reset Your Password - Jakarta Beauty School",
+        html: generateResetPasswordEmail(user.name, resetUrl),
+      });
+
+      res.json({ message: "If your email is registered, you will receive a password reset link" });
+    } catch (error: any) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ error: "Failed to process password reset request" });
+    }
+  });
+
+  // Reset password endpoint
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: "Token and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters" });
+      }
+
+      // Find user by reset token
+      const users = await storage.getAllUsers();
+      const user = users.find(u => u.resetPasswordToken === token);
+
+      if (!user) {
+        return res.status(400).json({ error: "Invalid or expired reset token" });
+      }
+
+      // Check if token is expired
+      if (!user.resetPasswordExpiry || new Date() > user.resetPasswordExpiry) {
+        return res.status(400).json({ error: "Reset token has expired" });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password and clear reset token
+      await storage.updateUser(user.id, {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpiry: null,
+      });
+
+      res.json({ message: "Password reset successful. You can now login with your new password" });
+    } catch (error: any) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ error: "Failed to reset password" });
     }
   });
 

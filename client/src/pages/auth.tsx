@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -208,6 +208,13 @@ export default function AuthPage() {
                       required
                       className="border-[#fec44f] focus-visible:ring-[#ec7014]"
                     />
+                  </div>
+                  <div className="text-right">
+                    <Link href="/forgot-password">
+                      <a className="text-sm text-[#ec7014] hover:text-[#cc4c02] hover:underline">
+                        Lupa Password?
+                      </a>
+                    </Link>
                   </div>
                 </CardContent>
                 <CardFooter>
