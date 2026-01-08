@@ -60,8 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/auth/login", { email, password });
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    onSuccess: async () => {
+      // Force refetch instead of just invalidate to ensure UI updates
+      await queryClient.refetchQueries({ queryKey: ["auth", "me"] });
     },
   });
 
