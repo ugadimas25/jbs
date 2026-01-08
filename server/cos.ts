@@ -37,6 +37,7 @@ export async function uploadToCOS(
         Key: key,
         Body: fileBuffer,
         ContentType: mimetype,
+        ContentDisposition: "inline", // Display in browser instead of download
       },
       (err, data) => {
         if (err) {
