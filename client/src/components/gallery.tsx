@@ -31,7 +31,7 @@ export default function Gallery() {
   });
 
   // Use API data only (no fallback)
-  const galleryItems: GalleryItem[] = galleryData?.gallery || [];
+  const galleryItems: GalleryItem[] = galleryData?.items || [];
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % galleryItems.length);

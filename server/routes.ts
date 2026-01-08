@@ -1024,7 +1024,7 @@ export async function registerRoutes(
       console.log("Body:", JSON.stringify(req.body));
       console.log("File:", req.file ? `${req.file.originalname} (${req.file.size} bytes)` : "No file");
       
-      const { titleId, titleEn, descriptionId, descriptionEn, sortOrder } = req.body;
+      const { titleId, titleEn, descriptionId, descriptionEn, sortOrder, isActive } = req.body;
 
       // Accept titleId only, use same value for titleEn if not provided
       if (!titleId) {
@@ -1046,6 +1046,7 @@ export async function registerRoutes(
         imageUrl: cosResult.url,
         imageKey: cosResult.key,
         sortOrder: parseInt(sortOrder) || 0,
+        isActive: isActive === "true" || isActive === true, // Handle form data boolean
       });
 
       res.status(201).json({ item });
