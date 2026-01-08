@@ -8,24 +8,11 @@ import { sendEmail, generateVerificationEmail } from "./email";
 import { insertUserSchema, loginSchema, insertBookingSchema, insertTeacherSchema, insertNotificationSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
+import { uploadToCOS } from "./cos";
 
-// Configure multer for file uploads
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
+// Configure multer for memory storage (files go to COS)
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      cb(null, uniqueSuffix + path.extname(file.originalname));
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|pdf/;
@@ -346,8 +333,16 @@ export async function registerRoutes(
         return res.status(400).json({ error: "No file uploaded" });
       }
 
+      // Upload to Tencent COS
+      const result = await uploadToCOS(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
+      console.log("File uploaded to COS:", result.url);
+
       const updatedBooking = await storage.updateBooking(req.params.id, {
-        paymentProof: `/uploads/${req.file.filename}`,
+        paymentProof: result.url,
         status: "waiting_approval",
       });
 
@@ -870,9 +865,6 @@ export async function registerRoutes(
       res.status(500).json({ error: "Failed to mark notifications as read" });
     }
   });
-
-  // Serve uploaded files
-  app.use("/uploads", express.static(uploadDir));
 
   return httpServer;
 }
