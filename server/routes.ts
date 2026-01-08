@@ -8,7 +8,7 @@ import { sendEmail, generateVerificationEmail, generateResetPasswordEmail } from
 import { insertUserSchema, loginSchema, insertBookingSchema, insertTeacherSchema, insertNotificationSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
-import { uploadToCOS } from "./cos";
+import { uploadToCOS, deleteFromCOS } from "./cos";
 
 // Configure multer for memory storage (files go to COS)
 const upload = multer({
@@ -971,6 +971,135 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Mark all notifications read error:", error);
       res.status(500).json({ error: "Failed to mark notifications as read" });
+    }
+  });
+
+  // ==================== GALLERY ROUTES ====================
+
+  // Get all active gallery items (public)
+  app.get("/api/gallery", async (req, res) => {
+    try {
+      const items = await storage.getActiveGalleryItems();
+      res.json({ items });
+    } catch (error: any) {
+      console.error("Get gallery error:", error);
+      res.status(500).json({ error: "Failed to get gallery items" });
+    }
+  });
+
+  // Get all gallery items (admin only)
+  app.get("/api/admin/gallery", requireAdmin, async (req, res) => {
+    try {
+      const items = await storage.getAllGalleryItems();
+      res.json({ items });
+    } catch (error: any) {
+      console.error("Get all gallery error:", error);
+      res.status(500).json({ error: "Failed to get gallery items" });
+    }
+  });
+
+  // Create gallery item (admin only)
+  app.post("/api/admin/gallery", requireAdmin, upload.single("image"), async (req: any, res) => {
+    try {
+      const { titleId, titleEn, descriptionId, descriptionEn, sortOrder } = req.body;
+
+      if (!titleId || !titleEn) {
+        return res.status(400).json({ error: "Title in both languages is required" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "Image is required" });
+      }
+
+      // Upload to COS
+      const cosResult = await uploadToCOS(req.file.buffer, req.file.originalname, req.file.mimetype);
+
+      const item = await storage.createGalleryItem({
+        titleId,
+        titleEn,
+        descriptionId: descriptionId || null,
+        descriptionEn: descriptionEn || null,
+        imageUrl: cosResult.url,
+        imageKey: cosResult.key,
+        sortOrder: parseInt(sortOrder) || 0,
+      });
+
+      res.status(201).json({ item });
+    } catch (error: any) {
+      console.error("Create gallery error:", error);
+      res.status(500).json({ error: "Failed to create gallery item" });
+    }
+  });
+
+  // Update gallery item (admin only)
+  app.put("/api/admin/gallery/:id", requireAdmin, upload.single("image"), async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { titleId, titleEn, descriptionId, descriptionEn, sortOrder, isActive } = req.body;
+
+      const existingItem = await storage.getGalleryItem(id);
+      if (!existingItem) {
+        return res.status(404).json({ error: "Gallery item not found" });
+      }
+
+      const updateData: any = {
+        titleId: titleId || existingItem.titleId,
+        titleEn: titleEn || existingItem.titleEn,
+        descriptionId: descriptionId !== undefined ? descriptionId : existingItem.descriptionId,
+        descriptionEn: descriptionEn !== undefined ? descriptionEn : existingItem.descriptionEn,
+        sortOrder: sortOrder !== undefined ? parseInt(sortOrder) : existingItem.sortOrder,
+        isActive: isActive !== undefined ? isActive === "true" || isActive === true : existingItem.isActive,
+      };
+
+      // If new image uploaded, update COS
+      if (req.file) {
+        // Delete old image from COS
+        if (existingItem.imageKey) {
+          try {
+            await deleteFromCOS(existingItem.imageKey);
+          } catch (e) {
+            console.error("Failed to delete old image from COS:", e);
+          }
+        }
+
+        // Upload new image
+        const cosResult = await uploadToCOS(req.file.buffer, req.file.originalname, req.file.mimetype);
+        updateData.imageUrl = cosResult.url;
+        updateData.imageKey = cosResult.key;
+      }
+
+      const updatedItem = await storage.updateGalleryItem(id, updateData);
+      res.json({ item: updatedItem });
+    } catch (error: any) {
+      console.error("Update gallery error:", error);
+      res.status(500).json({ error: "Failed to update gallery item" });
+    }
+  });
+
+  // Delete gallery item (admin only)
+  app.delete("/api/admin/gallery/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+
+      const existingItem = await storage.getGalleryItem(id);
+      if (!existingItem) {
+        return res.status(404).json({ error: "Gallery item not found" });
+      }
+
+      // Delete image from COS
+      if (existingItem.imageKey) {
+        try {
+          await deleteFromCOS(existingItem.imageKey);
+        } catch (e) {
+          console.error("Failed to delete image from COS:", e);
+        }
+      }
+
+      await storage.deleteGalleryItem(id);
+      res.json({ message: "Gallery item deleted successfully" });
+    } catch (error: any) {
+      console.error("Delete gallery error:", error);
+      res.status(500).json({ error: "Failed to delete gallery item" });
     }
   });
 

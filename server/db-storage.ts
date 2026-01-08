@@ -1,12 +1,13 @@
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, asc } from "drizzle-orm";
 import { db } from "./db";
 import {
-  users, bookings, teachers, notifications, rescheduleRequests,
+  users, bookings, teachers, notifications, rescheduleRequests, gallery,
   type User, type InsertUser,
   type Booking, type InsertBooking,
   type Teacher, type InsertTeacher,
   type Notification, type InsertNotification,
-  type RescheduleRequest, type InsertRescheduleRequest
+  type RescheduleRequest, type InsertRescheduleRequest,
+  type Gallery, type InsertGallery
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -344,6 +345,50 @@ export class DatabaseStorage implements IStorage {
       .where(eq(rescheduleRequests.id, id))
       .returning();
     return updatedRequest;
+  }
+
+  // Gallery methods
+  async createGalleryItem(insertItem: InsertGallery): Promise<Gallery> {
+    const [item] = await db.insert(gallery).values({
+      titleId: insertItem.titleId,
+      titleEn: insertItem.titleEn,
+      descriptionId: insertItem.descriptionId || null,
+      descriptionEn: insertItem.descriptionEn || null,
+      imageUrl: insertItem.imageUrl,
+      imageKey: insertItem.imageKey || null,
+      sortOrder: insertItem.sortOrder || 0,
+      isActive: true,
+    }).returning();
+    
+    return item;
+  }
+
+  async getGalleryItem(id: string): Promise<Gallery | undefined> {
+    const [item] = await db.select().from(gallery).where(eq(gallery.id, id)).limit(1);
+    return item;
+  }
+
+  async getAllGalleryItems(): Promise<Gallery[]> {
+    return await db.select().from(gallery).orderBy(asc(gallery.sortOrder));
+  }
+
+  async getActiveGalleryItems(): Promise<Gallery[]> {
+    return await db.select().from(gallery)
+      .where(eq(gallery.isActive, true))
+      .orderBy(asc(gallery.sortOrder));
+  }
+
+  async updateGalleryItem(id: string, data: Partial<Gallery>): Promise<Gallery | undefined> {
+    const [updatedItem] = await db.update(gallery)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(gallery.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  async deleteGalleryItem(id: string): Promise<boolean> {
+    const result = await db.delete(gallery).where(eq(gallery.id, id)).returning();
+    return result.length > 0;
   }
 }
 

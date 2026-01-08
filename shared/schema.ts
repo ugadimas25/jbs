@@ -1,7 +1,15 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp, integer, date } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, integer, date, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// ==================== SESSION TABLE (connect-pg-simple) ====================
+// This table is managed by connect-pg-simple for session storage
+export const session = pgTable("session", {
+  sid: varchar("sid").primaryKey(),
+  sess: json("sess").notNull(),
+  expire: timestamp("expire", { precision: 6 }).notNull(),
+});
 
 // ==================== USERS TABLE ====================
 export const users = pgTable("users", {
@@ -80,6 +88,21 @@ export const rescheduleRequests = pgTable("reschedule_requests", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// ==================== GALLERY TABLE ====================
+export const gallery = pgTable("gallery", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  titleId: text("title_id").notNull(), // Indonesian title
+  titleEn: text("title_en").notNull(), // English title
+  descriptionId: text("description_id"), // Indonesian description
+  descriptionEn: text("description_en"), // English description
+  imageUrl: text("image_url").notNull(), // COS URL
+  imageKey: text("image_key"), // COS key for deletion
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // ==================== SCHEMAS & TYPES ====================
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -124,6 +147,16 @@ export const insertRescheduleRequestSchema = createInsertSchema(rescheduleReques
   reason: true,
 });
 
+export const insertGallerySchema = createInsertSchema(gallery).pick({
+  titleId: true,
+  titleEn: true,
+  descriptionId: true,
+  descriptionEn: true,
+  imageUrl: true,
+  imageKey: true,
+  sortOrder: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -140,3 +173,6 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 export type RescheduleRequest = typeof rescheduleRequests.$inferSelect;
 export type InsertRescheduleRequest = z.infer<typeof insertRescheduleRequestSchema>;
+
+export type Gallery = typeof gallery.$inferSelect;
+export type InsertGallery = z.infer<typeof insertGallerySchema>;

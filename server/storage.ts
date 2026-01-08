@@ -3,7 +3,8 @@ import {
   type Booking, type InsertBooking,
   type Teacher, type InsertTeacher,
   type Notification, type InsertNotification,
-  type RescheduleRequest, type InsertRescheduleRequest
+  type RescheduleRequest, type InsertRescheduleRequest,
+  type Gallery, type InsertGallery
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -50,6 +51,14 @@ export interface IStorage {
   getAllRescheduleRequests(): Promise<RescheduleRequest[]>;
   getPendingRescheduleRequests(): Promise<RescheduleRequest[]>;
   updateRescheduleRequest(id: string, data: Partial<RescheduleRequest>): Promise<RescheduleRequest | undefined>;
+
+  // Gallery methods
+  createGalleryItem(item: InsertGallery): Promise<Gallery>;
+  getGalleryItem(id: string): Promise<Gallery | undefined>;
+  getAllGalleryItems(): Promise<Gallery[]>;
+  getActiveGalleryItems(): Promise<Gallery[]>;
+  updateGalleryItem(id: string, data: Partial<Gallery>): Promise<Gallery | undefined>;
+  deleteGalleryItem(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -58,6 +67,7 @@ export class MemStorage implements IStorage {
   private teachers: Map<string, Teacher>;
   private notifications: Map<string, Notification>;
   private rescheduleRequests: Map<string, RescheduleRequest>;
+  private galleryItems: Map<string, Gallery>;
   private initialized: boolean = false;
 
   constructor() {
@@ -66,6 +76,7 @@ export class MemStorage implements IStorage {
     this.teachers = new Map();
     this.notifications = new Map();
     this.rescheduleRequests = new Map();
+    this.galleryItems = new Map();
   }
 
   async init() {
@@ -460,6 +471,55 @@ export class MemStorage implements IStorage {
     const updatedRequest = { ...request, ...data, updatedAt: new Date() };
     this.rescheduleRequests.set(id, updatedRequest);
     return updatedRequest;
+  }
+
+  // Gallery methods
+  async createGalleryItem(insertItem: InsertGallery): Promise<Gallery> {
+    const id = randomUUID();
+    const now = new Date();
+    const item: Gallery = {
+      id,
+      titleId: insertItem.titleId,
+      titleEn: insertItem.titleEn,
+      descriptionId: insertItem.descriptionId || null,
+      descriptionEn: insertItem.descriptionEn || null,
+      imageUrl: insertItem.imageUrl,
+      imageKey: insertItem.imageKey || null,
+      sortOrder: insertItem.sortOrder || 0,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.galleryItems.set(id, item);
+    return item;
+  }
+
+  async getGalleryItem(id: string): Promise<Gallery | undefined> {
+    return this.galleryItems.get(id);
+  }
+
+  async getAllGalleryItems(): Promise<Gallery[]> {
+    return Array.from(this.galleryItems.values())
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getActiveGalleryItems(): Promise<Gallery[]> {
+    return Array.from(this.galleryItems.values())
+      .filter(item => item.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async updateGalleryItem(id: string, data: Partial<Gallery>): Promise<Gallery | undefined> {
+    const item = this.galleryItems.get(id);
+    if (!item) return undefined;
+    
+    const updatedItem = { ...item, ...data, updatedAt: new Date() };
+    this.galleryItems.set(id, updatedItem);
+    return updatedItem;
+  }
+
+  async deleteGalleryItem(id: string): Promise<boolean> {
+    return this.galleryItems.delete(id);
   }
 }
 

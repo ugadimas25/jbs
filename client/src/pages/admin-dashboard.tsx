@@ -15,8 +15,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { 
   CheckCircle, XCircle, Clock, Users, BookOpen, Calendar, 
-  UserCog, Plus, Trash2, Eye, FileImage, AlertCircle
+  UserCog, Plus, Trash2, Eye, FileImage, AlertCircle, Image, Edit, GripVertical
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
 import { CLASS_TYPES, LEVELS } from "@/lib/constants";
 
@@ -33,6 +35,20 @@ export default function AdminDashboard() {
   const [rescheduleDialog, setRescheduleDialog] = useState(false);
   const [rescheduleBooking, setRescheduleBooking] = useState<any>(null);
   const [rescheduleData, setRescheduleData] = useState({ requestedDate: "", requestedTime: "", reason: "" });
+
+  // State for Gallery management
+  const [galleryDialog, setGalleryDialog] = useState(false);
+  const [editingGallery, setEditingGallery] = useState<any>(null);
+  const [galleryForm, setGalleryForm] = useState({
+    titleId: "",
+    titleEn: "",
+    descriptionId: "",
+    descriptionEn: "",
+    sortOrder: 0,
+    isActive: true,
+  });
+  const [galleryImage, setGalleryImage] = useState<File | null>(null);
+  const [galleryImagePreview, setGalleryImagePreview] = useState<string | null>(null);
 
   // Redirect if not admin or teacher
   useEffect(() => {
@@ -96,6 +112,17 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const res = await fetch("/api/admin/reschedule-requests", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch reschedule requests");
+      return res.json();
+    },
+    enabled: isAdmin,
+  });
+
+  // Fetch gallery items (for admin)
+  const { data: galleryData, isLoading: galleryLoading } = useQuery({
+    queryKey: ["admin", "gallery"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/gallery", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch gallery");
       return res.json();
     },
     enabled: isAdmin,
@@ -267,6 +294,168 @@ export default function AdminDashboard() {
     },
   });
 
+  // Gallery create mutation
+  const createGalleryMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const res = await fetch("/api/admin/gallery", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create gallery item");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "gallery"] });
+      queryClient.invalidateQueries({ queryKey: ["gallery"] });
+      resetGalleryForm();
+      toast({
+        title: "Success",
+        description: "Gallery item created successfully.",
+        className: "bg-green-600 text-white border-none",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create gallery item",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Gallery update mutation
+  const updateGalleryMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      const res = await fetch(`/api/admin/gallery/${id}`, {
+        method: "PUT",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update gallery item");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "gallery"] });
+      queryClient.invalidateQueries({ queryKey: ["gallery"] });
+      resetGalleryForm();
+      toast({
+        title: "Success",
+        description: "Gallery item updated successfully.",
+        className: "bg-green-600 text-white border-none",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update gallery item",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Gallery delete mutation
+  const deleteGalleryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/gallery/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to delete gallery item");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "gallery"] });
+      queryClient.invalidateQueries({ queryKey: ["gallery"] });
+      toast({
+        title: "Success",
+        description: "Gallery item deleted successfully.",
+        className: "bg-green-600 text-white border-none",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete gallery item",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Helper function to reset gallery form
+  const resetGalleryForm = () => {
+    setGalleryDialog(false);
+    setEditingGallery(null);
+    setGalleryForm({
+      titleId: "",
+      titleEn: "",
+      descriptionId: "",
+      descriptionEn: "",
+      sortOrder: 0,
+      isActive: true,
+    });
+    setGalleryImage(null);
+    setGalleryImagePreview(null);
+  };
+
+  // Handle gallery form submit
+  const handleGallerySubmit = () => {
+    const formData = new FormData();
+    formData.append("titleId", galleryForm.titleId);
+    formData.append("titleEn", galleryForm.titleEn);
+    formData.append("descriptionId", galleryForm.descriptionId);
+    formData.append("descriptionEn", galleryForm.descriptionEn);
+    formData.append("sortOrder", galleryForm.sortOrder.toString());
+    formData.append("isActive", galleryForm.isActive.toString());
+    
+    if (galleryImage) {
+      formData.append("image", galleryImage);
+    }
+
+    if (editingGallery) {
+      updateGalleryMutation.mutate({ id: editingGallery.id, formData });
+    } else {
+      createGalleryMutation.mutate(formData);
+    }
+  };
+
+  // Handle gallery image change
+  const handleGalleryImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setGalleryImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setGalleryImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Open gallery edit dialog
+  const openGalleryEdit = (item: any) => {
+    setEditingGallery(item);
+    setGalleryForm({
+      titleId: item.titleId,
+      titleEn: item.titleEn,
+      descriptionId: item.descriptionId || "",
+      descriptionEn: item.descriptionEn || "",
+      sortOrder: item.sortOrder,
+      isActive: item.isActive,
+    });
+    setGalleryImagePreview(item.imageUrl);
+    setGalleryDialog(true);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
       pending_payment: { variant: "outline", label: "Pending Payment" },
@@ -404,7 +593,7 @@ export default function AdminDashboard() {
 
         {/* Main Tabs */}
         <Tabs defaultValue={isTeacher ? "my-schedule" : "approval"} className="space-y-6">
-          <TabsList className={`grid w-full bg-[#fff7bc] ${isAdmin ? "grid-cols-5" : "grid-cols-1"}`}>
+          <TabsList className={`grid w-full bg-[#fff7bc] ${isAdmin ? "grid-cols-6" : "grid-cols-1"}`}>
             {isAdmin && (
               <>
                 <TabsTrigger value="approval" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
@@ -421,6 +610,9 @@ export default function AdminDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="teachers" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
                   Teachers
+                </TabsTrigger>
+                <TabsTrigger value="gallery" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white">
+                  Gallery
                 </TabsTrigger>
               </>
             )}
@@ -1019,6 +1211,209 @@ export default function AdminDashboard() {
                       ))}
                     </TableBody>
                   </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          )}
+
+          {/* Gallery Tab */}
+          {isAdmin && (
+          <TabsContent value="gallery">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-[#662506]">Gallery Management</CardTitle>
+                <Dialog open={galleryDialog} onOpenChange={(open) => {
+                  if (!open) resetGalleryForm();
+                  else setGalleryDialog(true);
+                }}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-[#ec7014] hover:bg-[#cc4c02]">
+                      <Plus className="w-4 h-4 mr-2" /> Add Image
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>{editingGallery ? "Edit Gallery Item" : "Add New Gallery Item"}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      {/* Image Upload */}
+                      <div className="space-y-2">
+                        <Label>Image *</Label>
+                        <div className="flex flex-col gap-3">
+                          {galleryImagePreview && (
+                            <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                              <img 
+                                src={galleryImagePreview} 
+                                alt="Preview" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleGalleryImageChange}
+                            className="cursor-pointer"
+                          />
+                          {!editingGallery && !galleryImage && (
+                            <p className="text-sm text-red-500">Image is required</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Title ID */}
+                      <div className="space-y-2">
+                        <Label>Judul (Indonesian) *</Label>
+                        <Input 
+                          value={galleryForm.titleId}
+                          onChange={(e) => setGalleryForm(prev => ({ ...prev, titleId: e.target.value }))}
+                          placeholder="Judul dalam Bahasa Indonesia"
+                        />
+                      </div>
+
+                      {/* Title EN */}
+                      <div className="space-y-2">
+                        <Label>Title (English) *</Label>
+                        <Input 
+                          value={galleryForm.titleEn}
+                          onChange={(e) => setGalleryForm(prev => ({ ...prev, titleEn: e.target.value }))}
+                          placeholder="Title in English"
+                        />
+                      </div>
+
+                      {/* Description ID */}
+                      <div className="space-y-2">
+                        <Label>Deskripsi (Indonesian)</Label>
+                        <Textarea 
+                          value={galleryForm.descriptionId}
+                          onChange={(e) => setGalleryForm(prev => ({ ...prev, descriptionId: e.target.value }))}
+                          placeholder="Deskripsi dalam Bahasa Indonesia"
+                          rows={3}
+                        />
+                      </div>
+
+                      {/* Description EN */}
+                      <div className="space-y-2">
+                        <Label>Description (English)</Label>
+                        <Textarea 
+                          value={galleryForm.descriptionEn}
+                          onChange={(e) => setGalleryForm(prev => ({ ...prev, descriptionEn: e.target.value }))}
+                          placeholder="Description in English"
+                          rows={3}
+                        />
+                      </div>
+
+                      {/* Sort Order */}
+                      <div className="space-y-2">
+                        <Label>Sort Order</Label>
+                        <Input 
+                          type="number"
+                          value={galleryForm.sortOrder}
+                          onChange={(e) => setGalleryForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))}
+                          placeholder="0"
+                        />
+                        <p className="text-xs text-gray-500">Lower number = appears first</p>
+                      </div>
+
+                      {/* Active Toggle */}
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          checked={galleryForm.isActive}
+                          onCheckedChange={(checked) => setGalleryForm(prev => ({ ...prev, isActive: checked }))}
+                        />
+                        <Label>Active (visible on website)</Label>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={resetGalleryForm}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleGallerySubmit}
+                        disabled={
+                          !galleryForm.titleId || 
+                          !galleryForm.titleEn || 
+                          (!editingGallery && !galleryImage) ||
+                          createGalleryMutation.isPending ||
+                          updateGalleryMutation.isPending
+                        }
+                        className="bg-[#662506] hover:bg-[#993404]"
+                      >
+                        {(createGalleryMutation.isPending || updateGalleryMutation.isPending) 
+                          ? "Saving..." 
+                          : editingGallery ? "Update" : "Add"
+                        }
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                {galleryLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#ec7014] mx-auto"></div>
+                    <p className="text-gray-500 mt-2">Loading gallery...</p>
+                  </div>
+                ) : !galleryData?.gallery || galleryData.gallery.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Image className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                    <p>No gallery items yet</p>
+                    <p className="text-sm">Click "Add Image" to add your first gallery item</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {galleryData.gallery.map((item: any) => (
+                      <Card key={item.id} className={`overflow-hidden ${!item.isActive ? 'opacity-60' : ''}`}>
+                        <div className="relative h-48">
+                          <img 
+                            src={item.imageUrl} 
+                            alt={item.titleId}
+                            className="w-full h-full object-cover"
+                          />
+                          {!item.isActive && (
+                            <div className="absolute top-2 left-2">
+                              <Badge variant="secondary">Hidden</Badge>
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2">
+                            <Badge variant="outline" className="bg-white">#{item.sortOrder}</Badge>
+                          </div>
+                        </div>
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold text-[#662506] mb-1">{item.titleId}</h3>
+                          <p className="text-sm text-gray-500 mb-1">{item.titleEn}</p>
+                          {item.descriptionId && (
+                            <p className="text-xs text-gray-400 line-clamp-2">{item.descriptionId}</p>
+                          )}
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openGalleryEdit(item)}
+                            >
+                              <Edit className="w-4 h-4 mr-1" /> Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => {
+                                if (confirm("Are you sure you want to delete this gallery item?")) {
+                                  deleteGalleryMutation.mutate(item.id);
+                                }
+                              }}
+                              disabled={deleteGalleryMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>

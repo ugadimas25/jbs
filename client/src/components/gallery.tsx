@@ -1,103 +1,73 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
 
 interface GalleryItem {
-  id: number;
+  id: string;
   titleId: string;
   titleEn: string;
-  descriptionId: string;
-  descriptionEn: string;
-  image: string;
+  descriptionId: string | null;
+  descriptionEn: string | null;
+  imageUrl: string;
+  sortOrder: number;
+  isActive: boolean;
 }
 
-const galleryItems: GalleryItem[] = [
+// Fallback gallery items if API has no data
+const fallbackGalleryItems: GalleryItem[] = [
   {
-    id: 1,
+    id: "1",
     titleId: "Workshop Makeup",
     titleEn: "Makeup Workshop",
     descriptionId: "Siswa mempraktikkan teknik makeup profesional dengan produk standar industri",
     descriptionEn: "Students practicing professional makeup techniques with industry-standard products",
-    image: "/api/placeholder/800/600",
+    imageUrl: "/gallery/activity1.png",
+    sortOrder: 1,
+    isActive: true,
   },
   {
-    id: 2,
+    id: "2",
     titleId: "Kelas Nail Art",
     titleEn: "Nail Art Class",
     descriptionId: "Belajar desain nail art rumit dan aplikasi gel polish",
     descriptionEn: "Learning intricate nail art designs and gel polish application",
-    image: "/api/placeholder/800/600",
+    imageUrl: "/gallery/activity2.png",
+    sortOrder: 2,
+    isActive: true,
   },
   {
-    id: 3,
+    id: "3",
     titleId: "Pelatihan Eyelash Extension",
     titleEn: "Eyelash Extension Training",
     descriptionId: "Praktik langsung untuk ekstensi bulu mata klasik dan volume",
     descriptionEn: "Hands-on practice for classic and volume lash extensions",
-    image: "/api/placeholder/800/600",
-  },
-  {
-    id: 4,
-    titleId: "Upacara Wisuda",
-    titleEn: "Graduation Ceremony",
-    descriptionId: "Merayakan lulusan kami dengan sertifikasi profesional",
-    descriptionEn: "Celebrating our graduates with professional certification",
-    image: "/api/placeholder/800/600",
-  },
-  {
-    id: 5,
-    titleId: "Kompetisi Kecantikan",
-    titleEn: "Beauty Competition",
-    descriptionId: "Siswa menampilkan keahlian mereka di kompetisi kecantikan tahunan",
-    descriptionEn: "Students showcasing their skills in annual beauty competition",
-    image: "/api/placeholder/800/600",
-  },
-  {
-    id: 6,
-    titleId: "Sesi Makeup Pengantin",
-    titleEn: "Bridal Makeup Session",
-    descriptionId: "Teknik makeup pengantin tingkat lanjut dan penataan gaya",
-    descriptionEn: "Advanced bridal makeup techniques and styling",
-    image: "/api/placeholder/800/600",
-  },
-  {
-    id: 7,
-    titleId: "Pemotretan Profesional",
-    titleEn: "Professional Photoshoot",
-    descriptionId: "Karya siswa ditampilkan dalam pemotretan kecantikan profesional",
-    descriptionEn: "Students' work featured in professional beauty photoshoots",
-    image: "/api/placeholder/800/600",
-  },
-  {
-    id: 8,
-    titleId: "Workshop Hairdo",
-    titleEn: "Hairdo Workshop",
-    descriptionId: "Belajar penataan rambut profesional dan teknik updo",
-    descriptionEn: "Learning professional hairstyling and updo techniques",
-    image: "/api/placeholder/800/600",
-  },
-  {
-    id: 9,
-    titleId: "Masterclass Industri",
-    titleEn: "Industry Masterclass",
-    descriptionId: "Pembicara tamu dari brand kecantikan terkemuka berbagi wawasan industri",
-    descriptionEn: "Guest speaker from leading beauty brand sharing industry insights",
-    image: "/api/placeholder/800/600",
-  },
-  {
-    id: 10,
-    titleId: "Sesi Portfolio Siswa",
-    titleEn: "Student Portfolio Session",
-    descriptionId: "Membangun portfolio profesional dengan sesi model",
-    descriptionEn: "Building professional portfolios with model sessions",
-    image: "/api/placeholder/800/600",
+    imageUrl: "/gallery/activity3.png",
+    sortOrder: 3,
+    isActive: true,
   },
 ];
 
 export default function Gallery() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { t, lang } = useI18n();
+
+  // Fetch gallery items from API
+  const { data: galleryData, isLoading } = useQuery({
+    queryKey: ["gallery"],
+    queryFn: async () => {
+      const res = await fetch("/api/gallery");
+      if (!res.ok) throw new Error("Failed to fetch gallery");
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Use API data or fallback
+  const galleryItems: GalleryItem[] = galleryData?.gallery?.length > 0 
+    ? galleryData.gallery 
+    : fallbackGalleryItems;
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % galleryItems.length);
@@ -108,11 +78,54 @@ export default function Gallery() {
   };
 
   // Show 3 items at a time on desktop, 1 on mobile
-  const visibleItems = [
-    galleryItems[currentIndex],
-    galleryItems[(currentIndex + 1) % galleryItems.length],
-    galleryItems[(currentIndex + 2) % galleryItems.length],
-  ];
+  const visibleItems = galleryItems.length >= 3 
+    ? [
+        galleryItems[currentIndex],
+        galleryItems[(currentIndex + 1) % galleryItems.length],
+        galleryItems[(currentIndex + 2) % galleryItems.length],
+      ]
+    : galleryItems;
+
+  if (isLoading) {
+    return (
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#662506] mb-4">
+              {t("home.gallery.title")}
+            </h2>
+            <p className="text-lg text-[#993404] max-w-2xl mx-auto">
+              {t("home.gallery.subtitle")}
+            </p>
+          </div>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#ec7014]"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (galleryItems.length === 0) {
+    return (
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#662506] mb-4">
+              {t("home.gallery.title")}
+            </h2>
+            <p className="text-lg text-[#993404] max-w-2xl mx-auto">
+              {t("home.gallery.subtitle")}
+            </p>
+          </div>
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+            <Image className="w-16 h-16 mb-4" />
+            <p>Gallery coming soon</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16">
@@ -153,19 +166,19 @@ export default function Gallery() {
                   idx === 0 ? "block" : "hidden md:block"
                 }`}
               >
-                <div className="aspect-[4/3] bg-gradient-to-br from-[#fec44f] to-[#fee391] flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <div className="text-6xl mb-4">🎨</div>
-                    <p className="text-[#662506] font-medium">Gallery Image {item.id}</p>
-                    <p className="text-sm text-[#993404] mt-2">1200x900px recommended</p>
-                  </div>
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img 
+                    src={item.imageUrl} 
+                    alt={lang === "id" ? item.titleId : item.titleEn}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="font-serif text-xl font-bold text-[#662506] mb-2">
                     {lang === "id" ? item.titleId : item.titleEn}
                   </h3>
                   <p className="text-[#993404] text-sm">
-                    {lang === "id" ? item.descriptionId : item.descriptionEn}
+                    {lang === "id" ? (item.descriptionId || "") : (item.descriptionEn || "")}
                   </p>
                 </div>
               </div>
