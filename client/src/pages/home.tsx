@@ -137,9 +137,14 @@ export default function Home() {
           </div>
           <div>
             <h2 className="font-serif text-4xl font-bold text-[#662506] mb-6">
-              {lang === "id" ? "Mengapa Memilih Jakarta Beauty School?" : "Why Choose Jakarta Beauty School?"}
+              {lang === "id" ? "Tentang Jakarta Beauty School" : "About Jakarta Beauty School"}
             </h2>
-            <div className="space-y-6">
+            <p className="text-[#993404] text-lg mb-8 leading-relaxed">
+              {lang === "id" 
+                ? "Jakarta Beauty School adalah lembaga pelatihan profesional yang berfokus pada pengembangan keterampilan di industri kecantikan. Sekolah ini menawarkan berbagai program, termasuk nail art, kursus makeup dan hair do, serta pelatihan khusus dalam eyebrow microblading dan styling."
+                : "Jakarta Beauty School is a professional training institution that focuses on developing skills in the beauty industry. The school offers a wide range of programs, including nail art, makeup and hair do classes, as well as specialized training in eyebrow microblading and styling."}
+            </p>
+            <div className="space-y-4">
               {(lang === "id" ? [
                 "Sertifikasi yang diakui industri setelah selesai",
                 "Pelatihan langsung dengan produk premium",
@@ -159,9 +164,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <Button className="mt-10 h-12 px-8 bg-[#662506] text-white hover:bg-[#993404]">
-              {lang === "id" ? "Pelajari Lebih Lanjut" : "Learn More About Us"}
-            </Button>
           </div>
         </div>
         </div>

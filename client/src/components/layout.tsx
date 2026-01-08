@@ -233,27 +233,36 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
           <div>
             <h3 className="font-serif text-2xl font-bold mb-4 text-[#fec44f]">JAKARTA BEAUTY SCHOOL</h3>
-            <p className="text-[#fee391]/80 max-w-xs">
-              Empowering beauty professionals with world-class training in makeup, nails, and lashes.
+            <p className="text-[#fee391]/80 max-w-xs leading-relaxed">
+              Jakarta Beauty School is a professional training institution that focuses on developing skills in the beauty industry.
             </p>
           </div>
           <div>
             <h4 className="font-bold text-white mb-4">Contact</h4>
-            <p className="text-[#fee391]/80">Jakarta, Indonesia</p>
-            <p className="text-[#fee391]/80">+62 812 3456 7890</p>
-            <p className="text-[#fee391]/80">info@jakartabeautyschool.com</p>
+            <p className="text-[#fee391]/80 mb-2">
+              Jln. Kota Bambu Selatan I No. 6<br />
+              Rt. 7/ Rw. 9 Kota Bambu Selatan<br />
+              Kec. Palmerah, Kota Jakarta Barat<br />
+              DKI Jakarta 11420
+            </p>
+            <p className="text-[#fee391]/80 mt-3">
+              <span className="font-semibold">Phone:</span> 0821-550-771
+            </p>
           </div>
           <div>
             <h4 className="font-bold text-white mb-4">Follow Us</h4>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-[#ec7014] transition-colors">Instagram</a>
-              <a href="#" className="hover:text-[#ec7014] transition-colors">TikTok</a>
-              <a href="#" className="hover:text-[#ec7014] transition-colors">Facebook</a>
+            <div className="space-y-2">
+              <a href="https://instagram.com/jakartabeautyschool" target="_blank" rel="noopener noreferrer" className="block hover:text-[#ec7014] transition-colors">
+                <span className="font-semibold">Instagram:</span> @jakartabeautyschool
+              </a>
+              <a href="https://tiktok.com/@jakarta.beauty.sc" target="_blank" rel="noopener noreferrer" className="block hover:text-[#ec7014] transition-colors">
+                <span className="font-semibold">TikTok:</span> @jakarta.beauty.sc
+              </a>
             </div>
           </div>
         </div>
         <div className="container mx-auto px-4 mt-12 pt-8 border-t border-[#fff7bc]/20 text-center text-[#fee391]/60 text-sm">
-          © 2024 Jakarta Beauty School. All rights reserved.
+          © 2026 Jakarta Beauty School. All rights reserved.
         </div>
       </footer>
     </div>
