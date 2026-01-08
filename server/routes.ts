@@ -320,8 +320,19 @@ export async function registerRoutes(
   });
 
   // Upload payment proof
-  app.post("/api/bookings/:id/upload-proof", requireAuth, upload.single("proof"), async (req: any, res) => {
+  app.post("/api/bookings/:id/upload-proof", requireAuth, (req: any, res: any, next: any) => {
+    upload.single("proof")(req, res, (err: any) => {
+      if (err) {
+        console.error("Multer error:", err);
+        return res.status(400).json({ error: err.message || "File upload failed" });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
     try {
+      console.log("Upload endpoint hit, booking ID:", req.params.id);
+      console.log("File received:", req.file ? req.file.originalname : "No file");
+      
       const booking = await storage.getBooking(req.params.id);
       if (!booking) {
         return res.status(404).json({ error: "Booking not found" });
@@ -334,6 +345,7 @@ export async function registerRoutes(
       }
 
       // Upload to Tencent COS
+      console.log("Uploading to COS...");
       const result = await uploadToCOS(
         req.file.buffer,
         req.file.originalname,
@@ -356,7 +368,7 @@ export async function registerRoutes(
       res.json({ booking: updatedBooking });
     } catch (error: any) {
       console.error("Upload proof error:", error);
-      res.status(500).json({ error: "Failed to upload proof" });
+      res.status(500).json({ error: error.message || "Failed to upload proof" });
     }
   });
 
