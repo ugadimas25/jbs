@@ -1827,12 +1827,16 @@ export default function AdminDashboard() {
                 {/* Finance Table */}
                 {financeLoading ? (
                   <div className="text-center py-8">Loading finance data...</div>
-                ) : financeData?.data?.length === 0 ? (
+                ) : !financeData?.data || financeData.data.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    No finance records found
+                    <p>No finance records found</p>
+                    <p className="text-sm mt-2">Total bookings: {bookingsData?.bookings?.length || 0}</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
+                    <div className="mb-2 text-sm text-gray-600">
+                      Showing {financeData.data.length} records
+                    </div>
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -1846,7 +1850,7 @@ export default function AdminDashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {financeData?.data?.map((item: any) => (
+                        {financeData.data.map((item: any) => (
                           <TableRow key={item.bookingId}>
                             <TableCell className="font-medium">{item.studentName}</TableCell>
                             <TableCell>{item.studentEmail}</TableCell>
