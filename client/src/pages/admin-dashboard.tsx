@@ -174,7 +174,9 @@ export default function AdminDashboard() {
       
       const res = await fetch(`/api/admin/finance?${params.toString()}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch finance data");
-      return res.json();
+      const data = await res.json();
+      console.log("Finance data received:", data);
+      return data;
     },
     enabled: isAdmin,
   });
