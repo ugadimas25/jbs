@@ -124,7 +124,8 @@ export default function Home() {
       <Gallery />
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="bg-gradient-to-b from-[#ffffe5] to-white py-20">
+        <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="relative">
              <div className="absolute inset-0 bg-[#fec44f] rounded-3xl transform rotate-3"></div>
@@ -162,6 +163,7 @@ export default function Home() {
               {lang === "id" ? "Pelajari Lebih Lanjut" : "Learn More About Us"}
             </Button>
           </div>
+        </div>
         </div>
       </section>
     </div>

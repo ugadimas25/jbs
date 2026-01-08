@@ -115,7 +115,7 @@ export default function Gallery() {
   ];
 
   return (
-    <section className="bg-gradient-to-b from-[#ffffe5] to-white py-16">
+    <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#662506] mb-4">
