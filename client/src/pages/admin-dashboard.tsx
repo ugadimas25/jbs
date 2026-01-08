@@ -1358,7 +1358,7 @@ export default function AdminDashboard() {
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#ec7014] mx-auto"></div>
                     <p className="text-gray-500 mt-2">Memuat galeri...</p>
                   </div>
-                ) : !galleryData?.gallery || galleryData.gallery.length === 0 ? (
+                ) : !galleryData?.items || galleryData.items.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Image className="w-12 h-12 mx-auto mb-2 text-gray-400" />
                     <p>Belum ada item galeri</p>
@@ -1366,7 +1366,7 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {galleryData.gallery.map((item: any) => (
+                    {galleryData.items.map((item: any) => (
                       <Card key={item.id} className={`overflow-hidden ${!item.isActive ? 'opacity-60' : ''}`}>
                         <div className="relative h-48">
                           <img 
