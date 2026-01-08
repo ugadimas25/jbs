@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Image } from "lucide-react";
+import { ChevronLeft, ChevronRight, Image, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 
@@ -17,6 +18,8 @@ interface GalleryItem {
 
 export default function Gallery() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<GalleryItem | null>(null);
   const { t, lang } = useI18n();
 
   // Fetch gallery items from API
@@ -39,6 +42,16 @@ export default function Gallery() {
 
   const prev = () => {
     setCurrentIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
+  };
+
+  const openLightbox = (item: GalleryItem) => {
+    setLightboxImage(item);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setLightboxImage(null);
   };
 
   // Show 3 items at a time on desktop, 1 on mobile
@@ -130,12 +143,20 @@ export default function Gallery() {
                   idx === 0 ? "block" : idx === 1 ? "hidden sm:block" : "hidden lg:block"
                 }`}
               >
-                <div className="aspect-[4/3] overflow-hidden">
+                <div 
+                  className="aspect-[4/3] overflow-hidden cursor-pointer relative group"
+                  onClick={() => openLightbox(item)}
+                >
                   <img 
                     src={item.imageUrl} 
                     alt={lang === "id" ? item.titleId : item.titleEn}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2">
+                      <Image className="w-6 h-6 text-[#993404]" />
+                    </div>
+                  </div>
                 </div>
                 <div className="p-6">
                   <h3 className="font-serif text-xl font-bold text-[#662506] mb-2">
@@ -165,6 +186,42 @@ export default function Gallery() {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Dialog */}
+      <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Close Button */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Image Container */}
+            {lightboxImage && (
+              <div className="flex flex-col items-center justify-center max-w-full max-h-full p-8">
+                <img
+                  src={lightboxImage.imageUrl}
+                  alt={lang === "id" ? lightboxImage.titleId : lightboxImage.titleEn}
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                />
+                <div className="mt-4 text-center bg-black/70 rounded-lg px-6 py-3">
+                  <h3 className="font-serif text-xl font-bold text-white mb-1">
+                    {lang === "id" ? lightboxImage.titleId : lightboxImage.titleEn}
+                  </h3>
+                  {(lang === "id" ? lightboxImage.descriptionId : lightboxImage.descriptionEn) && (
+                    <p className="text-gray-200 text-sm">
+                      {lang === "id" ? lightboxImage.descriptionId : lightboxImage.descriptionEn}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
