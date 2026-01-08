@@ -69,6 +69,12 @@ export default function AdminDashboard() {
   const [classImage, setClassImage] = useState<File | null>(null);
   const [classImagePreview, setClassImagePreview] = useState<string | null>(null);
 
+  // State for Finance filters
+  const [financeFilters, setFinanceFilters] = useState({
+    status: "",
+    classType: "",
+  });
+
   // Redirect if not admin or teacher
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || (!isAdmin && !isTeacher))) {
@@ -153,6 +159,21 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const res = await fetch("/api/admin/classes", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch classes");
+      return res.json();
+    },
+    enabled: isAdmin,
+  });
+
+  // Fetch finance data (for admin)
+  const { data: financeData, isLoading: financeLoading } = useQuery({
+    queryKey: ["admin", "finance", financeFilters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (financeFilters.status) params.append("status", financeFilters.status);
+      if (financeFilters.classType) params.append("classType", financeFilters.classType);
+      
+      const res = await fetch(`/api/admin/finance?${params.toString()}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch finance data");
       return res.json();
     },
     enabled: isAdmin,
@@ -868,6 +889,9 @@ export default function AdminDashboard() {
                   </TabsTrigger>
                   <TabsTrigger value="classes" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
                     Classes
+                  </TabsTrigger>
+                  <TabsTrigger value="finance" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
+                    Finance
                   </TabsTrigger>
                   <TabsTrigger value="gallery" className="data-[state=active]:bg-[#ec7014] data-[state=active]:text-white whitespace-nowrap">
                     Gallery
@@ -1735,6 +1759,123 @@ export default function AdminDashboard() {
                         </CardContent>
                       </Card>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          )}
+
+          {/* Finance Tab */}
+          {isAdmin && (
+          <TabsContent value="finance">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[#662506]">Finance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Filters */}
+                <div className="flex gap-4 mb-6">
+                  <div className="flex-1">
+                    <Label htmlFor="status-filter">Payment Status</Label>
+                    <Select
+                      value={financeFilters.status}
+                      onValueChange={(value) => setFinanceFilters({ ...financeFilters, status: value })}
+                    >
+                      <SelectTrigger id="status-filter">
+                        <SelectValue placeholder="All Statuses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Statuses</SelectItem>
+                        <SelectItem value="pending_payment">Pending Payment</SelectItem>
+                        <SelectItem value="waiting_approval">Waiting Approval</SelectItem>
+                        <SelectItem value="payment_rejected">Payment Rejected</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="waiting_schedule">Waiting Schedule</SelectItem>
+                        <SelectItem value="scheduled">Scheduled</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <Label htmlFor="class-filter">Class Type</Label>
+                    <Select
+                      value={financeFilters.classType}
+                      onValueChange={(value) => setFinanceFilters({ ...financeFilters, classType: value })}
+                    >
+                      <SelectTrigger id="class-filter">
+                        <SelectValue placeholder="All Classes" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Classes</SelectItem>
+                        <SelectItem value="makeup">Make up and Hair do</SelectItem>
+                        <SelectItem value="nail">Nails</SelectItem>
+                        <SelectItem value="eyelash">Brow, lips and lash</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-end">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setFinanceFilters({ status: "", classType: "" })}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Finance Table */}
+                {financeLoading ? (
+                  <div className="text-center py-8">Loading finance data...</div>
+                ) : financeData?.data?.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No finance records found
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Student</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Class Type</TableHead>
+                          <TableHead>Payment Status</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Payment Due</TableHead>
+                          <TableHead>Created At</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {financeData?.data?.map((item: any) => (
+                          <TableRow key={item.bookingId}>
+                            <TableCell className="font-medium">{item.studentName}</TableCell>
+                            <TableCell>{item.studentEmail}</TableCell>
+                            <TableCell>{item.className}</TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                item.paymentStatus === "paid" || item.paymentStatus === "completed" ? "default" :
+                                item.paymentStatus === "payment_rejected" ? "destructive" :
+                                "secondary"
+                              }>
+                                {item.paymentStatus.replace(/_/g, " ")}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {item.amount ? `Rp ${item.amount.toLocaleString("id-ID")}` : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {item.paymentDue 
+                                ? new Date(item.paymentDue).toLocaleDateString("id-ID")
+                                : "-"
+                              }
+                            </TableCell>
+                            <TableCell>
+                              {new Date(item.createdAt).toLocaleDateString("id-ID")}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>

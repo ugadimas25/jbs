@@ -550,6 +550,36 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(classes).where(eq(classes.id, id)).returning();
     return result.length > 0;
   }
+
+  // Finance methods
+  async getFinanceData(): Promise<import("./storage").FinanceData[]> {
+    const allBookings = await db.select().from(bookings).orderBy(desc(bookings.createdAt));
+    
+    const financeData = await Promise.all(
+      allBookings.map(async (booking) => {
+        // Get user data
+        const [user] = await db.select().from(users).where(eq(users.id, booking.userId)).limit(1);
+        
+        // Get class data by slug (booking.classType is the slug)
+        const [classData] = await db.select().from(classes).where(eq(classes.slug, booking.classType)).limit(1);
+        
+        return {
+          bookingId: booking.id,
+          studentName: user?.name || "Unknown",
+          studentEmail: user?.email || "",
+          className: classData?.nameEn || booking.classType,
+          classType: booking.classType,
+          paymentStatus: booking.status,
+          paymentDue: booking.paymentDue,
+          amount: classData?.price || null,
+          createdAt: booking.createdAt,
+        };
+      })
+    );
+    
+    return financeData;
+  }
 }
 
 export const dbStorage = new DatabaseStorage();
+

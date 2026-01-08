@@ -1317,5 +1317,32 @@ export async function registerRoutes(
     }
   });
 
+  // ==================== FINANCE ENDPOINTS ====================
+
+  // Get finance data (admin only)
+  app.get("/api/admin/finance", requireAdmin, async (req: any, res) => {
+    try {
+      const { status, classType } = req.query;
+      
+      const financeData = await storage.getFinanceData();
+      
+      // Apply filters if provided
+      let filteredData = financeData;
+      
+      if (status) {
+        filteredData = filteredData.filter(item => item.paymentStatus === status);
+      }
+      
+      if (classType) {
+        filteredData = filteredData.filter(item => item.classType === classType);
+      }
+      
+      res.json({ data: filteredData });
+    } catch (error: any) {
+      console.error("Get finance data error:", error);
+      res.status(500).json({ error: "Failed to get finance data" });
+    }
+  });
+
   return httpServer;
 }

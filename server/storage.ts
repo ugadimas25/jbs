@@ -69,6 +69,21 @@ export interface IStorage {
   getActiveClasses(): Promise<Class[]>;
   updateClass(id: string, data: Partial<Class>): Promise<Class | undefined>;
   deleteClass(id: string): Promise<boolean>;
+
+  // Finance methods
+  getFinanceData(): Promise<FinanceData[]>;
+}
+
+export interface FinanceData {
+  bookingId: string;
+  studentName: string;
+  studentEmail: string;
+  className: string;
+  classType: string;
+  paymentStatus: string;
+  paymentDue: Date | null;
+  amount: number | null;
+  createdAt: Date;
 }
 
 export class MemStorage implements IStorage {
@@ -530,6 +545,56 @@ export class MemStorage implements IStorage {
 
   async deleteGalleryItem(id: string): Promise<boolean> {
     return this.galleryItems.delete(id);
+  }
+
+  // Class methods (stub implementations for MemStorage)
+  async createClass(item: InsertClass): Promise<Class> {
+    throw new Error("Class methods not implemented in MemStorage");
+  }
+
+  async getClass(id: string): Promise<Class | undefined> {
+    return undefined;
+  }
+
+  async getClassBySlug(slug: string): Promise<Class | undefined> {
+    return undefined;
+  }
+
+  async getAllClasses(): Promise<Class[]> {
+    return [];
+  }
+
+  async getActiveClasses(): Promise<Class[]> {
+    return [];
+  }
+
+  async updateClass(id: string, data: Partial<Class>): Promise<Class | undefined> {
+    return undefined;
+  }
+
+  async deleteClass(id: string): Promise<boolean> {
+    return false;
+  }
+
+  // Finance methods
+  async getFinanceData(): Promise<FinanceData[]> {
+    const bookingsList = Array.from(this.bookings.values());
+    
+    return bookingsList.map(booking => {
+      const user = this.users.get(booking.userId);
+      
+      return {
+        bookingId: booking.id,
+        studentName: user?.name || "Unknown",
+        studentEmail: user?.email || "",
+        className: booking.classType,
+        classType: booking.classType,
+        paymentStatus: booking.status,
+        paymentDue: booking.paymentDue || null,
+        amount: null,
+        createdAt: booking.createdAt,
+      };
+    }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
 
