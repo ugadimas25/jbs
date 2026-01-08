@@ -26,6 +26,13 @@ export class DatabaseStorage implements IStorage {
     if (existingAdmin.length === 0) {
       console.log("Seeding database with initial data...");
       await this.seedDatabase();
+    } else {
+      // Check if classes exist, if not seed them
+      const existingClasses = await db.select().from(classes).limit(1);
+      if (existingClasses.length === 0) {
+        console.log("Seeding default classes...");
+        await this.seedClasses();
+      }
     }
     
     this.initialized = true;
@@ -121,7 +128,103 @@ export class DatabaseStorage implements IStorage {
       isActive: true,
     });
 
+    // Seed default classes
+    await db.insert(classes).values({
+      slug: "makeup",
+      nameId: "Make up and Hair do",
+      nameEn: "Make up and Hair do",
+      descriptionId: "Kuasai seni tata rias kecantikan dan penataan rambut profesional. Pelajari teknik dasar hingga tingkat lanjut untuk berbagai kesempatan.",
+      descriptionEn: "Master the art of beauty makeup and professional hair styling. Learn basic to advanced techniques for various occasions.",
+      shortDescId: "Kelas tata rias dan penataan rambut profesional",
+      shortDescEn: "Professional makeup and hair styling class",
+      duration: "3-6 bulan",
+      price: 5000000,
+      features: ["Sertifikat", "Praktik langsung", "Materi lengkap", "Mentor profesional"],
+      sortOrder: 1,
+      isActive: true,
+    });
+
+    await db.insert(classes).values({
+      slug: "nail",
+      nameId: "Nails",
+      nameEn: "Nails",
+      descriptionId: "Ciptakan desain kuku yang menakjubkan dan teknik perawatan kuku. Pelajari nail art dari dasar hingga desain kompleks.",
+      descriptionEn: "Create stunning nail designs and nail care techniques. Learn nail art from basic to complex designs.",
+      shortDescId: "Kelas desain dan perawatan kuku profesional",
+      shortDescEn: "Professional nail design and care class",
+      duration: "2-4 bulan",
+      price: 4000000,
+      features: ["Sertifikat", "Praktik langsung", "Kit nail art", "Mentor profesional"],
+      sortOrder: 2,
+      isActive: true,
+    });
+
+    await db.insert(classes).values({
+      slug: "eyelash",
+      nameId: "Brow, lips and lash",
+      nameEn: "Brow, lips and lash",
+      descriptionId: "Pelajari teknik presisi untuk membentuk alis, bibir, dan aplikasi bulu mata. Kuasai seni detail wajah.",
+      descriptionEn: "Learn precision techniques for eyebrow shaping, lips, and lash application. Master the art of facial details.",
+      shortDescId: "Kelas alis, bibir, dan bulu mata profesional",
+      shortDescEn: "Professional brow, lips, and lash class",
+      duration: "2-3 bulan",
+      price: 3500000,
+      features: ["Sertifikat", "Praktik langsung", "Peralatan premium", "Mentor profesional"],
+      sortOrder: 3,
+      isActive: true,
+    });
+
     console.log("✅ Database seeded successfully");
+  }
+
+  private async seedClasses() {
+    // Seed default classes
+    await db.insert(classes).values({
+      slug: "makeup",
+      nameId: "Make up and Hair do",
+      nameEn: "Make up and Hair do",
+      descriptionId: "Kuasai seni tata rias kecantikan dan penataan rambut profesional. Pelajari teknik dasar hingga tingkat lanjut untuk berbagai kesempatan.",
+      descriptionEn: "Master the art of beauty makeup and professional hair styling. Learn basic to advanced techniques for various occasions.",
+      shortDescId: "Kelas tata rias dan penataan rambut profesional",
+      shortDescEn: "Professional makeup and hair styling class",
+      duration: "3-6 bulan",
+      price: 5000000,
+      features: ["Sertifikat", "Praktik langsung", "Materi lengkap", "Mentor profesional"],
+      sortOrder: 1,
+      isActive: true,
+    });
+
+    await db.insert(classes).values({
+      slug: "nail",
+      nameId: "Nails",
+      nameEn: "Nails",
+      descriptionId: "Ciptakan desain kuku yang menakjubkan dan teknik perawatan kuku. Pelajari nail art dari dasar hingga desain kompleks.",
+      descriptionEn: "Create stunning nail designs and nail care techniques. Learn nail art from basic to complex designs.",
+      shortDescId: "Kelas desain dan perawatan kuku profesional",
+      shortDescEn: "Professional nail design and care class",
+      duration: "2-4 bulan",
+      price: 4000000,
+      features: ["Sertifikat", "Praktik langsung", "Kit nail art", "Mentor profesional"],
+      sortOrder: 2,
+      isActive: true,
+    });
+
+    await db.insert(classes).values({
+      slug: "eyelash",
+      nameId: "Brow, lips and lash",
+      nameEn: "Brow, lips and lash",
+      descriptionId: "Pelajari teknik presisi untuk membentuk alis, bibir, dan aplikasi bulu mata. Kuasai seni detail wajah.",
+      descriptionEn: "Learn precision techniques for eyebrow shaping, lips, and lash application. Master the art of facial details.",
+      shortDescId: "Kelas alis, bibir, dan bulu mata profesional",
+      shortDescEn: "Professional brow, lips, and lash class",
+      duration: "2-3 bulan",
+      price: 3500000,
+      features: ["Sertifikat", "Praktik langsung", "Peralatan premium", "Mentor profesional"],
+      sortOrder: 3,
+      isActive: true,
+    });
+
+    console.log("✅ Default classes seeded successfully");
   }
 
   // ==================== USER METHODS ====================
