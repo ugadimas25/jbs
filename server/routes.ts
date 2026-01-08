@@ -26,6 +26,25 @@ const upload = multer({
   },
 });
 
+// Helper function to wrap multer with error handling
+const handleMulterUpload = (uploadFn: any) => {
+  return (req: any, res: any, next: any) => {
+    uploadFn(req, res, (err: any) => {
+      if (err instanceof multer.MulterError) {
+        // Multer-specific errors
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ error: "File size exceeds 5MB limit" });
+        }
+        return res.status(400).json({ error: err.message });
+      } else if (err) {
+        // Other errors (e.g., from fileFilter)
+        return res.status(400).json({ error: err.message });
+      }
+      next();
+    });
+  };
+};
+
 // Middleware to check authentication
 const requireAuth = async (req: any, res: any, next: any) => {
   if (!req.session?.userId) {
@@ -999,7 +1018,7 @@ export async function registerRoutes(
   });
 
   // Create gallery item (admin only)
-  app.post("/api/admin/gallery", requireAdmin, upload.single("image"), async (req: any, res) => {
+  app.post("/api/admin/gallery", requireAdmin, handleMulterUpload(upload.single("image")), async (req: any, res) => {
     try {
       const { titleId, titleEn, descriptionId, descriptionEn, sortOrder } = req.body;
 
@@ -1033,7 +1052,7 @@ export async function registerRoutes(
   });
 
   // Update gallery item (admin only)
-  app.put("/api/admin/gallery/:id", requireAdmin, upload.single("image"), async (req: any, res) => {
+  app.put("/api/admin/gallery/:id", requireAdmin, handleMulterUpload(upload.single("image")), async (req: any, res) => {
     try {
       const { id } = req.params;
       const { titleId, titleEn, descriptionId, descriptionEn, sortOrder, isActive } = req.body;

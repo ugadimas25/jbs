@@ -300,9 +300,18 @@ export default function AdminDashboard() {
         credentials: "include",
         body: formData,
       });
+      
+      // Check content-type to handle non-JSON responses
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server error: Invalid response format");
+      }
+      
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || "Failed to create gallery item");
+        throw new Error(error.error || error.message || "Failed to create gallery item");
       }
       return res.json();
     },
@@ -333,9 +342,18 @@ export default function AdminDashboard() {
         credentials: "include",
         body: formData,
       });
+      
+      // Check content-type to handle non-JSON responses
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server error: Invalid response format");
+      }
+      
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || "Failed to update gallery item");
+        throw new Error(error.error || error.message || "Failed to update gallery item");
       }
       return res.json();
     },
@@ -365,9 +383,18 @@ export default function AdminDashboard() {
         method: "DELETE",
         credentials: "include",
       });
+      
+      // Check content-type to handle non-JSON responses
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server error: Invalid response format");
+      }
+      
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || "Failed to delete gallery item");
+        throw new Error(error.error || error.message || "Failed to delete gallery item");
       }
       return res.json();
     },
