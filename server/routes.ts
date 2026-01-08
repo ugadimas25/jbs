@@ -177,8 +177,14 @@ export async function registerRoutes(
         // Explicitly save session before responding
         await new Promise<void>((resolve, reject) => {
           req.session.save((err) => {
-            if (err) reject(err);
-            else resolve();
+            if (err) {
+              console.error("Session save error:", err);
+              reject(err);
+            } else {
+              console.log("Session saved successfully. Session ID:", req.sessionID);
+              console.log("Session data:", req.session);
+              resolve();
+            }
           });
         });
       }
@@ -243,6 +249,10 @@ export async function registerRoutes(
   // Get current user endpoint
   app.get("/api/auth/me", async (req, res) => {
     try {
+      console.log("GET /api/auth/me - Session ID:", req.sessionID);
+      console.log("GET /api/auth/me - Session userId:", req.session?.userId);
+      console.log("GET /api/auth/me - Cookies:", req.headers.cookie);
+      
       if (!req.session?.userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
