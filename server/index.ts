@@ -119,12 +119,21 @@ app.use((req, res, next) => {
 
   await registerRoutes(httpServer, app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  // Error handler - must return JSON for API routes
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+    console.error("Global error handler:", err);
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    // Only send response if not already sent
+    if (!res.headersSent) {
+      // Always return JSON for API routes
+      if (req.path.startsWith("/api")) {
+        res.status(status).json({ error: message });
+      } else {
+        res.status(status).json({ message });
+      }
+    }
   });
 
   // importantly only setup vite in development and after

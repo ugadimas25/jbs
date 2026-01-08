@@ -1020,6 +1020,10 @@ export async function registerRoutes(
   // Create gallery item (admin only)
   app.post("/api/admin/gallery", requireAdmin, handleMulterUpload(upload.single("image")), async (req: any, res) => {
     try {
+      console.log("Gallery create request received");
+      console.log("Body:", JSON.stringify(req.body));
+      console.log("File:", req.file ? `${req.file.originalname} (${req.file.size} bytes)` : "No file");
+      
       const { titleId, titleEn, descriptionId, descriptionEn, sortOrder } = req.body;
 
       // Accept titleId only, use same value for titleEn if not provided
