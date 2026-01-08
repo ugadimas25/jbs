@@ -1781,14 +1781,14 @@ export default function AdminDashboard() {
                   <div className="flex-1">
                     <Label htmlFor="status-filter">Payment Status</Label>
                     <Select
-                      value={financeFilters.status}
-                      onValueChange={(value) => setFinanceFilters({ ...financeFilters, status: value })}
+                      value={financeFilters.status || "all"}
+                      onValueChange={(value) => setFinanceFilters({ ...financeFilters, status: value === "all" ? "" : value })}
                     >
                       <SelectTrigger id="status-filter">
                         <SelectValue placeholder="All Statuses" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Statuses</SelectItem>
+                        <SelectItem value="all">All Statuses</SelectItem>
                         <SelectItem value="pending_payment">Pending Payment</SelectItem>
                         <SelectItem value="waiting_approval">Waiting Approval</SelectItem>
                         <SelectItem value="payment_rejected">Payment Rejected</SelectItem>
@@ -1802,14 +1802,14 @@ export default function AdminDashboard() {
                   <div className="flex-1">
                     <Label htmlFor="class-filter">Class Type</Label>
                     <Select
-                      value={financeFilters.classType}
-                      onValueChange={(value) => setFinanceFilters({ ...financeFilters, classType: value })}
+                      value={financeFilters.classType || "all"}
+                      onValueChange={(value) => setFinanceFilters({ ...financeFilters, classType: value === "all" ? "" : value })}
                     >
                       <SelectTrigger id="class-filter">
                         <SelectValue placeholder="All Classes" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Classes</SelectItem>
+                        <SelectItem value="all">All Classes</SelectItem>
                         <SelectItem value="makeup">Make up and Hair do</SelectItem>
                         <SelectItem value="nail">Nails</SelectItem>
                         <SelectItem value="eyelash">Brow, lips and lash</SelectItem>
