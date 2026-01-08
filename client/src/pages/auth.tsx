@@ -7,11 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation, Link } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, lang } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -103,25 +105,25 @@ export default function AuthPage() {
               />
            </div>
            <h1 className="font-serif text-3xl font-bold text-[#662506]">Jakarta Beauty School</h1>
-           <p className="text-[#993404]">Join our community of beauty professionals</p>
+           <p className="text-[#993404]">{t("auth.tagline")}</p>
         </div>
 
         <Card className="border-none shadow-2xl bg-white/90 backdrop-blur">
           <Tabs defaultValue="signup" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4 bg-[#ffffe5]">
-              <TabsTrigger value="signup" className="data-[state=active]:bg-[#fec44f] data-[state=active]:text-[#662506]">Sign Up</TabsTrigger>
-              <TabsTrigger value="login" className="data-[state=active]:bg-[#fec44f] data-[state=active]:text-[#662506]">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="data-[state=active]:bg-[#fec44f] data-[state=active]:text-[#662506]">{t("auth.signup")}</TabsTrigger>
+              <TabsTrigger value="login" className="data-[state=active]:bg-[#fec44f] data-[state=active]:text-[#662506]">{t("auth.login")}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signup">
               <form onSubmit={handleSignup}>
                 <CardHeader>
-                  <CardTitle>Create Account</CardTitle>
-                  <CardDescription>Start your journey with us today.</CardDescription>
+                  <CardTitle>{t("auth.createAccount")}</CardTitle>
+                  <CardDescription>{t("auth.createAccountDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">{t("auth.fullName")}</Label>
                     <Input 
                       id="name" 
                       placeholder="Jane Doe" 
@@ -132,7 +134,7 @@ export default function AuthPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email-signup">Email</Label>
+                    <Label htmlFor="email-signup">{t("auth.email")}</Label>
                     <Input 
                       id="email-signup" 
                       type="email" 
@@ -144,7 +146,7 @@ export default function AuthPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number (Optional)</Label>
+                    <Label htmlFor="phone">{t("auth.phone")}</Label>
                     <Input 
                       id="phone" 
                       type="tel" 
@@ -155,7 +157,7 @@ export default function AuthPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password-signup">Password</Label>
+                    <Label htmlFor="password-signup">{t("auth.password")}</Label>
                     <Input 
                       id="password-signup" 
                       type="password"
@@ -173,7 +175,7 @@ export default function AuthPage() {
                     className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white"
                     disabled={signupMutation.isPending}
                   >
-                    {signupMutation.isPending ? "Creating account..." : "Sign Up"}
+                    {signupMutation.isPending ? t("auth.creatingAccount") : t("auth.signup")}
                   </Button>
                 </CardFooter>
               </form>
@@ -182,12 +184,12 @@ export default function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={handleLogin}>
                 <CardHeader>
-                  <CardTitle>Welcome Back</CardTitle>
-                  <CardDescription>Sign in to manage your bookings.</CardDescription>
+                  <CardTitle>{t("auth.welcomeBack")}</CardTitle>
+                  <CardDescription>{t("auth.welcomeBackDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email-login">Email</Label>
+                    <Label htmlFor="email-login">{t("auth.email")}</Label>
                     <Input 
                       id="email-login" 
                       type="email" 
@@ -199,7 +201,7 @@ export default function AuthPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password-login">Password</Label>
+                    <Label htmlFor="password-login">{t("auth.password")}</Label>
                     <Input 
                       id="password-login" 
                       type="password" 
@@ -212,7 +214,7 @@ export default function AuthPage() {
                   <div className="text-right">
                     <Link href="/forgot-password">
                       <a className="text-sm text-[#ec7014] hover:text-[#cc4c02] hover:underline">
-                        Lupa Password?
+                        {t("auth.forgotPassword")}
                       </a>
                     </Link>
                   </div>
@@ -223,7 +225,7 @@ export default function AuthPage() {
                     className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white"
                     disabled={loginMutation.isPending}
                   >
-                    {loginMutation.isPending ? "Logging in..." : "Login"}
+                    {loginMutation.isPending ? t("auth.loggingIn") : t("auth.login")}
                   </Button>
                 </CardFooter>
               </form>

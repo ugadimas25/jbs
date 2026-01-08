@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate, Link } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Mail, ArrowLeft } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [, navigate] = useNavigate();
+  const [, navigate] = useLocation();
+  const { t } = useI18n();
 
   const forgotPasswordMutation = useMutation({
     mutationFn: async (email: string) => {
@@ -39,9 +41,9 @@ export default function ForgotPassword() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Lupa Password?</CardTitle>
+          <CardTitle className="text-2xl">{t("forgot.title")}</CardTitle>
           <CardDescription>
-            Masukkan email Anda dan kami akan mengirimkan link untuk reset password
+            {t("forgot.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -50,8 +52,7 @@ export default function ForgotPassword() {
               <Alert className="bg-green-50 border-green-200">
                 <Mail className="h-4 w-4" />
                 <AlertDescription>
-                  Email telah dikirim! Silakan cek inbox Anda (termasuk folder spam) 
-                  untuk link reset password. Link akan kadaluarsa dalam 1 jam.
+                  {t("forgot.success")}
                 </AlertDescription>
               </Alert>
               <Button
@@ -60,7 +61,7 @@ export default function ForgotPassword() {
                 onClick={() => navigate("/auth")}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Kembali ke Login
+                {t("forgot.backToLogin")}
               </Button>
             </div>
           ) : (
@@ -74,7 +75,7 @@ export default function ForgotPassword() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("auth.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -90,13 +91,13 @@ export default function ForgotPassword() {
                 className="w-full"
                 disabled={forgotPasswordMutation.isPending}
               >
-                {forgotPasswordMutation.isPending ? "Mengirim..." : "Kirim Link Reset"}
+                {forgotPasswordMutation.isPending ? t("forgot.sending") : t("forgot.sendLink")}
               </Button>
 
               <Link href="/auth">
                 <Button variant="ghost" className="w-full">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Kembali ke Login
+                  {t("forgot.backToLogin")}
                 </Button>
               </Link>
             </form>

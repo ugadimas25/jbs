@@ -1,72 +1,103 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 
-const galleryItems = [
+interface GalleryItem {
+  id: number;
+  titleId: string;
+  titleEn: string;
+  descriptionId: string;
+  descriptionEn: string;
+  image: string;
+}
+
+const galleryItems: GalleryItem[] = [
   {
     id: 1,
-    title: "Makeup Workshop",
-    description: "Students practicing professional makeup techniques with industry-standard products",
+    titleId: "Workshop Makeup",
+    titleEn: "Makeup Workshop",
+    descriptionId: "Siswa mempraktikkan teknik makeup profesional dengan produk standar industri",
+    descriptionEn: "Students practicing professional makeup techniques with industry-standard products",
     image: "/api/placeholder/800/600",
   },
   {
     id: 2,
-    title: "Nail Art Class",
-    description: "Learning intricate nail art designs and gel polish application",
+    titleId: "Kelas Nail Art",
+    titleEn: "Nail Art Class",
+    descriptionId: "Belajar desain nail art rumit dan aplikasi gel polish",
+    descriptionEn: "Learning intricate nail art designs and gel polish application",
     image: "/api/placeholder/800/600",
   },
   {
     id: 3,
-    title: "Eyelash Extension Training",
-    description: "Hands-on practice for classic and volume lash extensions",
+    titleId: "Pelatihan Eyelash Extension",
+    titleEn: "Eyelash Extension Training",
+    descriptionId: "Praktik langsung untuk ekstensi bulu mata klasik dan volume",
+    descriptionEn: "Hands-on practice for classic and volume lash extensions",
     image: "/api/placeholder/800/600",
   },
   {
     id: 4,
-    title: "Graduation Ceremony",
-    description: "Celebrating our graduates with professional certification",
+    titleId: "Upacara Wisuda",
+    titleEn: "Graduation Ceremony",
+    descriptionId: "Merayakan lulusan kami dengan sertifikasi profesional",
+    descriptionEn: "Celebrating our graduates with professional certification",
     image: "/api/placeholder/800/600",
   },
   {
     id: 5,
-    title: "Beauty Competition",
-    description: "Students showcasing their skills in annual beauty competition",
+    titleId: "Kompetisi Kecantikan",
+    titleEn: "Beauty Competition",
+    descriptionId: "Siswa menampilkan keahlian mereka di kompetisi kecantikan tahunan",
+    descriptionEn: "Students showcasing their skills in annual beauty competition",
     image: "/api/placeholder/800/600",
   },
   {
     id: 6,
-    title: "Bridal Makeup Session",
-    description: "Advanced bridal makeup techniques and styling",
+    titleId: "Sesi Makeup Pengantin",
+    titleEn: "Bridal Makeup Session",
+    descriptionId: "Teknik makeup pengantin tingkat lanjut dan penataan gaya",
+    descriptionEn: "Advanced bridal makeup techniques and styling",
     image: "/api/placeholder/800/600",
   },
   {
     id: 7,
-    title: "Professional Photoshoot",
-    description: "Students' work featured in professional beauty photoshoots",
+    titleId: "Pemotretan Profesional",
+    titleEn: "Professional Photoshoot",
+    descriptionId: "Karya siswa ditampilkan dalam pemotretan kecantikan profesional",
+    descriptionEn: "Students' work featured in professional beauty photoshoots",
     image: "/api/placeholder/800/600",
   },
   {
     id: 8,
-    title: "Hairdo Workshop",
-    description: "Learning professional hairstyling and updo techniques",
+    titleId: "Workshop Hairdo",
+    titleEn: "Hairdo Workshop",
+    descriptionId: "Belajar penataan rambut profesional dan teknik updo",
+    descriptionEn: "Learning professional hairstyling and updo techniques",
     image: "/api/placeholder/800/600",
   },
   {
     id: 9,
-    title: "Industry Masterclass",
-    description: "Guest speaker from leading beauty brand sharing industry insights",
+    titleId: "Masterclass Industri",
+    titleEn: "Industry Masterclass",
+    descriptionId: "Pembicara tamu dari brand kecantikan terkemuka berbagi wawasan industri",
+    descriptionEn: "Guest speaker from leading beauty brand sharing industry insights",
     image: "/api/placeholder/800/600",
   },
   {
     id: 10,
-    title: "Student Portfolio Session",
-    description: "Building professional portfolios with model sessions",
+    titleId: "Sesi Portfolio Siswa",
+    titleEn: "Student Portfolio Session",
+    descriptionId: "Membangun portfolio profesional dengan sesi model",
+    descriptionEn: "Building professional portfolios with model sessions",
     image: "/api/placeholder/800/600",
   },
 ];
 
 export default function Gallery() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { t, lang } = useI18n();
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % galleryItems.length);
@@ -88,10 +119,10 @@ export default function Gallery() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#662506] mb-4">
-            Gallery
+            {t("home.gallery.title")}
           </h2>
           <p className="text-lg text-[#993404] max-w-2xl mx-auto">
-            Explore the vibrant moments and activities at Jakarta Beauty School
+            {t("home.gallery.subtitle")}
           </p>
         </div>
 
@@ -131,10 +162,10 @@ export default function Gallery() {
                 </div>
                 <div className="p-6">
                   <h3 className="font-serif text-xl font-bold text-[#662506] mb-2">
-                    {item.title}
+                    {lang === "id" ? item.titleId : item.titleEn}
                   </h3>
                   <p className="text-[#993404] text-sm">
-                    {item.description}
+                    {lang === "id" ? item.descriptionId : item.descriptionEn}
                   </p>
                 </div>
               </div>

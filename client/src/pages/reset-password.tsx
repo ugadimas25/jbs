@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate, useSearch } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [, navigate] = useNavigate();
+  const [, navigate] = useLocation();
   const search = useSearch();
+  const { t, lang } = useI18n();
   
   // Get token from URL query parameter
   const params = new URLSearchParams(search);
@@ -47,12 +49,12 @@ export default function ResetPassword() {
     }
 
     if (newPassword.length < 6) {
-      alert("Password minimal 6 karakter");
+      alert(lang === "id" ? "Password minimal 6 karakter" : "Password must be at least 6 characters");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert("Password tidak cocok");
+      alert(lang === "id" ? "Password tidak cocok" : "Passwords do not match");
       return;
     }
 
@@ -64,23 +66,23 @@ export default function ResetPassword() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl">Link Tidak Valid</CardTitle>
+            <CardTitle className="text-2xl">{t("reset.invalidLink")}</CardTitle>
             <CardDescription>
-              Token reset password tidak ditemukan atau tidak valid
+              {t("reset.invalidLinkDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Link reset password tidak valid. Silakan request link baru.
+                {t("reset.invalidLinkError")}
               </AlertDescription>
             </Alert>
             <Button
               className="w-full mt-4"
               onClick={() => navigate("/forgot-password")}
             >
-              Request Link Baru
+              {t("reset.requestNew")}
             </Button>
           </CardContent>
         </Card>
@@ -92,9 +94,9 @@ export default function ResetPassword() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardTitle className="text-2xl">{t("reset.title")}</CardTitle>
           <CardDescription>
-            Masukkan password baru Anda
+            {t("reset.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,7 +105,7 @@ export default function ResetPassword() {
               <Alert className="bg-green-50 border-green-200">
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertDescription>
-                  Password berhasil direset! Anda akan dialihkan ke halaman login...
+                  {t("reset.success")}
                 </AlertDescription>
               </Alert>
             </div>
@@ -119,11 +121,11 @@ export default function ResetPassword() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="newPassword">Password Baru</Label>
+                <Label htmlFor="newPassword">{t("reset.newPassword")}</Label>
                 <Input
                   id="newPassword"
                   type="password"
-                  placeholder="Minimal 6 karakter"
+                  placeholder={t("reset.minChars")}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -132,11 +134,11 @@ export default function ResetPassword() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
+                <Label htmlFor="confirmPassword">{t("reset.confirmPassword")}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Ketik ulang password"
+                  placeholder={t("reset.retypePassword")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -149,7 +151,7 @@ export default function ResetPassword() {
                 className="w-full"
                 disabled={resetPasswordMutation.isPending}
               >
-                {resetPasswordMutation.isPending ? "Mereset..." : "Reset Password"}
+                {resetPasswordMutation.isPending ? t("reset.resetting") : t("reset.button")}
               </Button>
             </form>
           )}

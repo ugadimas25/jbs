@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
+import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Bell } from "lucide-react";
@@ -89,6 +90,7 @@ function NotificationBell() {
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, isAuthenticated, isAdmin, isTeacher, logout } = useAuth();
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -108,12 +110,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 font-medium text-[#993404]">
-            <Link href="/"><a className="hover:text-[#ec7014] transition-colors">Home</a></Link>
+            <Link href="/"><a className="hover:text-[#ec7014] transition-colors">{t("nav.home")}</a></Link>
             <Link href="/#classes"><a className="hover:text-[#ec7014] transition-colors">Classes</a></Link>
             <Link href="/#about"><a className="hover:text-[#ec7014] transition-colors">About</a></Link>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
+            <LanguageSwitcher />
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3">
                 <NotificationBell />
@@ -121,14 +124,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {!isAdmin && !isTeacher && (
                   <Link href="/history">
                     <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
-                      My Classes
+                      {t("nav.myClasses")}
                     </Button>
                   </Link>
                 )}
                 {isAdmin && (
                   <Link href="/admin">
                     <Button variant="ghost" className="text-[#993404] hover:text-[#ec7014] hover:bg-[#fec44f]/20">
-                      Admin
+                      {t("nav.admin")}
                     </Button>
                   </Link>
                 )}
@@ -144,13 +147,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   onClick={logout}
                   className="border-[#cc4c02] text-[#cc4c02] hover:bg-[#cc4c02]/10"
                 >
-                  Sign Out
+                  {t("nav.logout")}
                 </Button>
               </div>
             ) : (
               <Link href="/auth">
                 <Button className="bg-[#ec7014] hover:bg-[#cc4c02] text-white font-medium shadow-md hover:shadow-lg transition-all">
-                  Sign In / Sign Up
+                  {t("nav.login")}
                 </Button>
               </Link>
             )}
@@ -158,6 +161,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Mobile Navigation */}
           <div className="md:hidden flex items-center gap-2">
+            <LanguageSwitcher />
             {isAuthenticated && user && <NotificationBell />}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>

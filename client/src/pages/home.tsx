@@ -4,10 +4,12 @@ import { ArrowRight, Star, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CLASS_TYPES } from "@/lib/constants";
 import { useAuth } from "@/lib/auth-context";
+import { useI18n } from "@/lib/i18n";
 import Gallery from "@/components/gallery";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const { t, lang } = useI18n();
 
   return (
     <div className="flex flex-col gap-20">
@@ -34,18 +36,26 @@ export default function Home() {
             className="max-w-2xl"
           >
             <div className="inline-block bg-[#fec44f] text-[#662506] px-4 py-1.5 rounded-full font-bold text-sm mb-6 tracking-wide uppercase">
-              Enrollment Open for 2026
+              {lang === "id" ? "Pendaftaran Dibuka 2026" : "Enrollment Open for 2026"}
             </div>
             <h1 className="font-serif text-5xl md:text-7xl font-bold text-[#ffffe5] mb-6 leading-tight">
-              Master the Art of <span className="text-[#fec44f] italic">Beauty</span>
+              {lang === "id" ? (
+                <>Kuasai Seni <span className="text-[#fec44f] italic">Kecantikan</span></>
+              ) : (
+                <>Master the Art of <span className="text-[#fec44f] italic">Beauty</span></>
+              )}
             </h1>
             <p className="text-[#fff7bc] text-xl mb-10 max-w-lg leading-relaxed">
-              Join Indonesia's premier academy for makeup, nail art, and eyelash extensions. Professional certification for your career.
+              {lang === "id" 
+                ? "Bergabunglah dengan akademi terkemuka di Indonesia untuk makeup, nail art, dan eyelash extension. Sertifikasi profesional untuk karir Anda."
+                : "Join Indonesia's premier academy for makeup, nail art, and eyelash extensions. Professional certification for your career."}
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href={isAuthenticated ? "/booking" : "/auth"}>
                 <Button className="h-14 px-8 bg-[#ec7014] hover:bg-[#cc4c02] text-white text-lg rounded-full shadow-[0_0_20px_rgba(236,112,20,0.4)] transition-all transform hover:scale-105">
-                  {isAuthenticated ? "Book a Class Now" : "Sign Up to Book"} <ArrowRight className="ml-2 w-5 h-5" />
+                  {isAuthenticated 
+                    ? (lang === "id" ? "Booking Kelas Sekarang" : "Book a Class Now") 
+                    : (lang === "id" ? "Daftar untuk Booking" : "Sign Up to Book")} <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               <Button 
@@ -56,7 +66,7 @@ export default function Home() {
                 variant="outline" 
                 className="h-14 px-8 border-[#fff7bc] text-[#fff7bc] hover:bg-[#fff7bc] hover:text-[#662506] text-lg rounded-full bg-transparent backdrop-blur-sm transition-all"
               >
-                Explore Courses
+                {t("home.hero.exploreCourses")}
               </Button>
             </div>
           </motion.div>
@@ -66,8 +76,14 @@ export default function Home() {
       {/* Classes Section */}
       <section id="classes" className="container mx-auto px-4 py-10">
         <div className="text-center mb-16">
-          <h2 className="font-serif text-4xl font-bold text-[#662506] mb-4">Our Signature Courses</h2>
-          <p className="text-[#993404] text-lg max-w-2xl mx-auto">Choose your specialization and start your journey to becoming a certified beauty professional.</p>
+          <h2 className="font-serif text-4xl font-bold text-[#662506] mb-4">
+            {lang === "id" ? "Kursus Unggulan Kami" : "Our Signature Courses"}
+          </h2>
+          <p className="text-[#993404] text-lg max-w-2xl mx-auto">
+            {lang === "id" 
+              ? "Pilih spesialisasi Anda dan mulai perjalanan menjadi profesional kecantikan bersertifikat."
+              : "Choose your specialization and start your journey to becoming a certified beauty professional."}
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -95,7 +111,7 @@ export default function Home() {
                 <p className="text-[#993404] mb-6">{item.description}</p>
                 <Link href={`/courses/${item.id}`}>
                   <Button className="w-full bg-[#ec7014] hover:bg-[#cc4c02] text-white font-bold">
-                    View Details
+                    {lang === "id" ? "Lihat Detail" : "View Details"}
                   </Button>
                 </Link>
               </div>
@@ -109,10 +125,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { num: "5000+", label: "Graduates" },
-              { num: "10+", label: "Years Experience" },
-              { num: "100%", label: "Certified" },
-              { num: "4.9/5", label: "Student Rating" },
+              { num: "5000+", label: lang === "id" ? "Lulusan" : "Graduates" },
+              { num: "10+", label: lang === "id" ? "Tahun Pengalaman" : "Years Experience" },
+              { num: "100%", label: lang === "id" ? "Bersertifikat" : "Certified" },
+              { num: "4.9/5", label: lang === "id" ? "Rating Siswa" : "Student Rating" },
             ].map((stat, i) => (
               <div key={i}>
                 <div className="font-serif text-4xl md:text-5xl font-bold text-[#fec44f] mb-2">{stat.num}</div>
@@ -135,15 +151,23 @@ export default function Home() {
              />
           </div>
           <div>
-            <h2 className="font-serif text-4xl font-bold text-[#662506] mb-6">Why Choose Jakarta Beauty School?</h2>
+            <h2 className="font-serif text-4xl font-bold text-[#662506] mb-6">
+              {lang === "id" ? "Mengapa Memilih Jakarta Beauty School?" : "Why Choose Jakarta Beauty School?"}
+            </h2>
             <div className="space-y-6">
-              {[
+              {(lang === "id" ? [
+                "Sertifikasi yang diakui industri setelah selesai",
+                "Pelatihan langsung dengan produk premium",
+                "Bimbingan karir dan bantuan penempatan kerja",
+                "Jadwal fleksibel dengan opsi akhir pekan",
+                "Kelas kecil untuk perhatian personal"
+              ] : [
                 "Industry-recognized certification upon completion",
                 "Hands-on training with premium products",
                 "Career guidance and job placement assistance",
                 "Flexible scheduling with weekend options",
                 "Small class sizes for personalized attention"
-              ].map((feature, i) => (
+              ]).map((feature, i) => (
                 <div key={i} className="flex items-start gap-4">
                   <CheckCircle className="w-6 h-6 text-[#ec7014] mt-1 shrink-0" />
                   <p className="text-[#993404] text-lg">{feature}</p>
@@ -151,7 +175,7 @@ export default function Home() {
               ))}
             </div>
             <Button className="mt-10 h-12 px-8 bg-[#662506] text-white hover:bg-[#993404]">
-              Learn More About Us
+              {lang === "id" ? "Pelajari Lebih Lanjut" : "Learn More About Us"}
             </Button>
           </div>
         </div>
